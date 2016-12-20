@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@android:color/white"
+        android:orientation="vertical"
+
+        >
+
+        <!-- 服务器地址 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/login_textsize.color.scale.backgauge"
+                android:text="@string/server_ip" />
+            <EditText
+                android:id="@+id/login_server_ip"
+                style="@style/login_textsize.editcolor.edit_scale.backgauge.single"
+                android:hint="@string/input_server_ip" />
+        </LinearLayout>
+        <!-- 服务器端口 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                style="@style/login_textsize.color.scale.backgauge"
+                android:text="@string/server_port" />
+            <EditText
+                android:id="@+id/login_server_port"
+                style="@style/login_textsize.editcolor.edit_scale.backgauge.single"
+                android:hint="@string/input_server_port" />
+        </LinearLayout>
+
+        <!-- 按钮 和 状态 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/login_textsize.color.scale.backgauge"
+                android:text="@string/login_state" />
+
+            <TextView
+                android:id="@+id/login_state"
+                style="@style/login_textsize.editcolor.edit_scale.backgauge.single"
+                android:text="@string/login_state_connect_not"
+                android:textColor="@color/text_color_1" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/login_button"
+                style="@style/login_textsize.color.scale.backgauge"
+                android:text="@string/login_button" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

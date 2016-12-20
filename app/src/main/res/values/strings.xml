@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">MPhone</string>
+    
+
+    <string name="server_ip"> 服务器地址 : </string>
+    <string name="server_port"> 服务器端口 : </string>
+
+
+    <string name="input_server_ip">请输入服务器地址</string>
+    <string name="input_server_port">请输入服务器端口号</string>
+
+
+    <string name="login_state">状态 : </string>
+    <string name="login_state_connect_success">连接成功</string>
+    <string name="login_state_connect_failt">连接失败</string>
+    <string name="login_state_connect_not">未连接</string>
+    <string name="login_state_connect_ing">连接中</string>
+
+    <string name="login_button">连接服务器</string>
+
+
+    <string name="show_server_sure">接受服务请求</string>
+    <string name="show_server_over">服务请求完成</string>
+</resources>
