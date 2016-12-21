@@ -15,8 +15,8 @@ import android.support.annotation.Nullable;
 import com.sok.mphone.R;
 import com.sok.mphone.activity.BaseActivity;
 import com.sok.mphone.activity.BaseBroad;
-import com.sok.mphone.dataEntity.SocketBeads;
-import com.sok.mphone.dataEntity.SysInfo;
+import com.sok.mphone.entity.SocketBeads;
+import com.sok.mphone.entity.SysInfo;
 import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
 import com.sok.mphone.threads.interfaceImp.CommunicationThread;
 import com.sok.mphone.tools.CommunicationProtocol;
@@ -55,7 +55,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
         log.e(TAG, "----------------------------------------onStartCommand() flags =" + flags);
 
 
-        if (SysInfo.get().isConfig()) {
+        if (SysInfo.get(true).isConfig()) {
             try {
                 if (communicationThread != null && communicationThread.isAlive()) {
                     log.i(TAG, "  通讯 线程 正在 执行中 ... ");
@@ -88,11 +88,13 @@ public class CommuntServer extends Service implements IActvityCommunication {
 
     public void receiveAppMsg(String message) {
         if (message != null && !"".equals(message) && communicationThread != null) {
-            if (message.equals(LocalCommand.STOP_ZX)) {
-                stopAlarm();
+            if (message.contains(CommunicationProtocol.ANTY)) {
+                communicationThread.sendMessageToThread(message);//发送消息给服务器
+                SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE,true);//保存呼叫状态
+                stopAlarm(); //停止
                 stopVibrator();
-            } else {
-                communicationThread.sendMessageToThread(message);
+                //通知activity 已发送
+                sendActivityMessage(MESSAGE_SEND_SUCCESS);
             }
 
         }
@@ -136,6 +138,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
         if (socBen == null) {
             return;
         }
+        log.i(TAG,"开启通讯线程中...");
         communicationThread = new CommunicationThread(this, socBen);
         communicationThread.mStart();
         communicationThread.start();
@@ -154,8 +157,8 @@ public class CommuntServer extends Service implements IActvityCommunication {
     @Override
     public void sendMessageToActivity(int type) {
         if (type == IActvityCommunication.CONNECT_SUCCEND) {
-            SysInfo.get().setConnectState(SysInfo.ConnectStates.connectSuccess, true);
-            sendActivityMessage();
+            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_SUCCESS, true);
+            sendActivityMessage(type);
         }
         if (type == IActvityCommunication.CONNECT_ING) {
             //发送 mac 地址 ...
@@ -163,16 +166,17 @@ public class CommuntServer extends Service implements IActvityCommunication {
         }
         if (type == IActvityCommunication.CONNECT_NO_ING || type == IActvityCommunication.CONNECT_FAILT) {
             // 连接失败
-            SysInfo.get().setConnectState(SysInfo.ConnectStates.connectFailt,true);
+            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_FAILT,true);
+            sendActivityMessage(type);
         }
     }
 
-    private void sendActivityMessage() {
+    private void sendActivityMessage(int type) {
         //发送给activity
         Intent intent = new Intent();
         intent.setAction(BaseBroad.ACTION);
         Bundle bundle = new Bundle();
-        bundle.putInt(BaseBroad.PARAM1, 1);
+        bundle.putInt(BaseBroad.PARAM1, type);
         intent.putExtras(bundle);
         getApplication().sendBroadcast(intent);
     }
@@ -184,7 +188,12 @@ public class CommuntServer extends Service implements IActvityCommunication {
 
     private void postTask(String cmd, String command) {
         log.i(" 收到 服务器 命令 - [" + cmd + "] - [" + command + "]");
-        handler.post(runTGP);
+        if (cmd.equals(CommunicationProtocol.SNTY)){
+            //设置通讯状态
+            SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_CALL,true);
+            log.i(TAG," SysInfo.get().getCommunicationState() -  "+ SysInfo.get().getCommunicationState());
+            handler.post(runTGP);
+        }
     }
 
     private Handler handler = new Handler();
@@ -192,13 +201,22 @@ public class CommuntServer extends Service implements IActvityCommunication {
             Runnable() {
                 @Override
                 public void run() {
-                    Intent intent = new Intent(CommuntServer.this, BaseActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    CommuntServer.this.getApplicationContext().startActivity(intent);
-                    startAlarm();
-                    startVibrator();
+                  callCmds();
                 }
             };
+
+    //收到传呼命令
+    private void callCmds() {
+        startActivitys();
+        startAlarm();
+        startVibrator();
+    }
+    //开启activity界面
+    private void startActivitys() {
+        Intent intent = new Intent(CommuntServer.this, BaseActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        CommuntServer.this.getApplicationContext().startActivity(intent);
+    }
 
     private Vibrator vibrator;
 
@@ -253,29 +271,3 @@ public class CommuntServer extends Service implements IActvityCommunication {
         }
     }
 }
-//            Vibrator vibrator = (Vibrator)mActivity.getSystemService(Context.VIBRATOR_SERVICE);
-//            vibrator.vibrate(new long[]{300,500},0);
-  /*  MediaPlayer mediaPlayer = new MediaPlayer();
-mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mediaPlayer .setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-@Override
-public void onCompletion(MediaPlayer player) {
-        player.seekTo(0);
-        }
-        });
-        AssetFileDescriptor file = mActivity.getResources().openRawResourceFd(R.raw.a);
-        try{
-
-        mediaPlayer.setDataSource(file.getFileDescriptor(),
-
-        file.getStartOffset(), file.getLength());
-
-        file.close();
-
-        mediaPlayer.setVolume(100,100);
-
-        mediaPlayer.prepare();
-        mediaPlayer.start();
-        }catch (IOException ioe) {
-        mediaPlayer = null;
-        }*/

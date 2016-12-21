@@ -1,4 +1,4 @@
-package com.sok.mphone.dataEntity;
+package com.sok.mphone.entity;
 
 import com.sok.mphone.tools.log;
 

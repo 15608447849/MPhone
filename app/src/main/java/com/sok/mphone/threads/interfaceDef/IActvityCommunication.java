@@ -9,6 +9,7 @@ public interface IActvityCommunication {
     public int CONNECT_ING = 0x01;//连接中
     public int CONNECT_FAILT = 0x02;//失败
     public int CONNECT_NO_ING = 0x03;//未连接
+    public int MESSAGE_SEND_SUCCESS = 0x04;
 
     void sendMessageToActivity(int type);
     void sendMessageToActivity(String message);

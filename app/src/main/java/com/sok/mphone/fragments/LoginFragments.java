@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.sok.mphone.R;
 import com.sok.mphone.activity.BaseActivity;
-import com.sok.mphone.dataEntity.SysInfo;
+import com.sok.mphone.entity.SysInfo;
 import com.sok.mphone.tools.AppsTools;
 
 import butterknife.Bind;
@@ -96,21 +96,18 @@ public class LoginFragments extends Fragment {
 
     @OnClick(R.id.login_button)
     public void onClick() {
-        if (!SysInfo.get().isConnected()) {
-            String ip = login_server_ip.getText().toString();
-            String port = login_server_port.getText().toString();
+        if (!SysInfo.get(true).isConnected()) { //未连接 连接失败等
+            String ip = login_server_ip.getText().toString().trim();
+            String port = login_server_port.getText().toString().trim();
             if (!"".equals(ip) && !"".equals(port)) {
+                login_state.setText(mActivity.getString(R.string.login_state_connect_ing));//连接中
                 SysInfo.get().setServerIp(ip);
                 SysInfo.get().setServerPort(port);
                 SysInfo.get().setAppMac(AppsTools.getLocalMacAddressFromBusybox());
-                SysInfo.get().saveInfo();
-                login_state.setText(mActivity.getString(R.string.login_state_connect_ing));//连接中
+                SysInfo.get().writeInfo();
                 mActivity.startCommunication();
             }
-        } else {
-            mActivity.showTolas("请勿重复连接");
         }
-
     }
 
 
@@ -124,7 +121,10 @@ public class LoginFragments extends Fragment {
     public void setConnectSuccess() {
         login_state.setText(mActivity.getString(R.string.login_state_connect_success));
         setEnable(false);
+        //转变页面
+        mActivity.initFragments();
     }
+
 
 
 }

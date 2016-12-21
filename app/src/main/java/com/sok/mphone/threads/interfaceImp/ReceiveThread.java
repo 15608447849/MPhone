@@ -1,6 +1,6 @@
 package com.sok.mphone.threads.interfaceImp;
 
-import com.sok.mphone.dataEntity.SocketBeads;
+import com.sok.mphone.entity.SocketBeads;
 import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
 import com.sok.mphone.threads.interfaceDef.IThread;
 
@@ -11,7 +11,7 @@ import com.sok.mphone.threads.interfaceDef.IThread;
 public class ReceiveThread extends IThread {
 
     private SocketBeads sBean;
-
+    private boolean iii =true;
     private IActvityCommunication iActivity;
 
     public ReceiveThread(SocketBeads sBean,IActvityCommunication iActivity) {
@@ -35,8 +35,14 @@ public class ReceiveThread extends IThread {
                            iActivity.sendMessageToActivity(message);
                        }
                     }
-//                    Thread.sleep(30*1000);
-//                    iActivity.sendMessageToActivity("TESTS:[测试命令]");
+                    if (iii){
+                        iii=false;
+
+                        Thread.sleep(30*1000);
+
+                        iActivity.sendMessageToActivity("SNTY:[测试命令]");
+                    }
+
                 } catch (Exception e) {
                     mError(e);
                     //关闭连接

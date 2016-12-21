@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.sok.mphone.tools.log;
-
 /**
  * Created by user on 2016/12/19.
  */
@@ -26,9 +24,7 @@ public class BaseBroad extends BroadcastReceiver{
     @Override
     public void onReceive(Context context, Intent intent) {
         int type = intent.getExtras().getInt(PARAM1);
-        log.i(TAG," - - - - - - 收到广播");
         if (mActivity!=null){
-
             mActivity.receiveServerMessage(type);
         }
     }

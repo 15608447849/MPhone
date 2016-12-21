@@ -1,12 +1,18 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+
+
+
+
+    <!-- activity 进入 离开
+     窗口进入和退出的效果分别是通过@android:windowEnterAnimation和@android:windowExitAnimation属性 -->
+
+    <style name="AppLaucherTheme">
+        <item name="android:windowNoTitle">true</item>
     </style>
+
+
+
 
     <style name="login_textsize">
          <item name="android:textSize">@dimen/text_size</item>

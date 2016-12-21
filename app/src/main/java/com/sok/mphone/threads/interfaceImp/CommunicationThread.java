@@ -1,6 +1,6 @@
 package com.sok.mphone.threads.interfaceImp;
 
-import com.sok.mphone.dataEntity.SocketBeads;
+import com.sok.mphone.entity.SocketBeads;
 import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
 import com.sok.mphone.threads.interfaceDef.IThread;
 import com.sok.mphone.tools.log;

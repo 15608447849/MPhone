@@ -21,7 +21,7 @@ public class IFragmentsFactory {
         }
 
         if(tag == IFragmentsFactory.Type.show_page){
-            frag = new ShowFfragments();
+            frag = new ShowFragments();
         }
         return frag;
     }
