@@ -1,14 +1,10 @@
 <resources>
 
 
-
-
-
-    <!-- activity 进入 离开
-     窗口进入和退出的效果分别是通过@android:windowEnterAnimation和@android:windowExitAnimation属性 -->
-
-    <style name="AppLaucherTheme">
+    <!-- activity 主题-->
+    <style name="AppLaucherTheme" >
         <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@android:color/transparent</item>
     </style>
 
 
