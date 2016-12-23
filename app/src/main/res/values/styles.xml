@@ -1,23 +1,15 @@
 <resources>
-
-
     <!-- activity 主题-->
     <style name="AppLaucherTheme" >
         <item name="android:windowNoTitle">true</item>
-        <item name="android:background">@android:color/transparent</item>
     </style>
-
-
-
 
     <style name="login_textsize">
          <item name="android:textSize">@dimen/text_size</item>
     </style>
-
     <style name="login_textsize.color">
         <item name="android:textColor">@color/text_color_1</item>
     </style>
-    
     <style name="login_textsize.color.scale">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_weight">1</item>
@@ -27,10 +19,6 @@
         <item name="android:padding">5dp</item>
         <item name="android:gravity">center</item>
     </style>
-
-
-
-
     <style name="login_textsize.editcolor">
         <item name="android:textColor">@color/text_color_2</item>
     </style>
@@ -46,9 +34,4 @@
     <style name="login_textsize.editcolor.edit_scale.backgauge.single">
         <item name="android:singleLine">true</item>
     </style>
-
-
-
-    
-
 </resources>

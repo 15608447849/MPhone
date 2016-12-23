@@ -12,6 +12,7 @@ import com.sok.mphone.entity.SysInfo;
 import com.sok.mphone.fragments.IFragmentsFactory;
 import com.sok.mphone.fragments.LoginFragments;
 import com.sok.mphone.fragments.ShowFragments;
+import com.sok.mphone.fragments.TitleFragments;
 import com.sok.mphone.services.CommuntBroadCasd;
 import com.sok.mphone.services.CommuntServer;
 import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
@@ -22,11 +23,11 @@ public class BaseActivity extends Activity {
 
     private LoginFragments loginPage;
     private ShowFragments showPage;
-
+    private TitleFragments titlePage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        overridePendingTransition(R.anim.activity_open,R.anim.activity_close);
         super.onCreate(savedInstanceState);
-        overridePendingTransition(R.anim.activity_open,R.anim.activity_close);//
         setContentView(R.layout.activity_base);
         registBroad();
         initFragments();
@@ -42,6 +43,23 @@ public class BaseActivity extends Activity {
     protected void onRestart() {
         super.onRestart();
         log.e(TAG,"onRestart - ");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+//        unFragments();
+    }
+
+    private void unFragments() {
+        if (loginPage != null) {
+            IFragmentsFactory.removeFragment(getFragmentManager().beginTransaction(), loginPage);
+            loginPage = null;
+        }
+        if (showPage != null) {
+            IFragmentsFactory.removeFragment(getFragmentManager().beginTransaction(), showPage);
+            showPage = null;
+        }
     }
 
     @Override
@@ -73,6 +91,7 @@ public class BaseActivity extends Activity {
     }
 
     public void initFragments() {
+
         swithPage();
         addPages();
     }
@@ -96,18 +115,26 @@ public class BaseActivity extends Activity {
             if (loginPage == null)
                 loginPage = (LoginFragments) IFragmentsFactory.getInstans(IFragmentsFactory.Type.login_page);
         }
+        if (titlePage==null){
+            titlePage = (TitleFragments) IFragmentsFactory.getInstans(IFragmentsFactory.Type.title_page);
+        }
     }
 
     //添加页面
     private void addPages() {
-        if (loginPage != null) {
-            stopCommunication();
-            IFragmentsFactory.addFragment(getFragmentManager().beginTransaction(), R.id.base_layout_2, loginPage);
-        }
-        if (showPage != null) {
-            IFragmentsFactory.addFragment(getFragmentManager().beginTransaction(), R.id.base_layout_3, showPage);
+        if (titlePage != null) {
+            IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_1, titlePage);
             startCommunication();
         }
+        if (loginPage != null) {
+            stopCommunication();
+            IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_2, loginPage);
+        }
+        if (showPage != null) {
+            IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_3, showPage);
+            startCommunication();
+        }
+
     }
 
 

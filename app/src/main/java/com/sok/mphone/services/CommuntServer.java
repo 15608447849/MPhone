@@ -29,9 +29,7 @@ import com.sok.mphone.tools.log;
 public class CommuntServer extends Service implements IActvityCommunication {
     private static String TAG = "CommuntServer";
 
-    public interface LocalCommand {
-        String STOP_ZX = "TING_ZHI_ZHENG_DONG_LING_SHENG";
-    }
+
 
 
     private SocketBeads socBen;
@@ -46,6 +44,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
     @Override
     public void onCreate() {
         super.onCreate();
+
         log.e(TAG, "----------------------------------------onCreate() pid: " + android.os.Process.myPid());
         registBroad();
     }
@@ -57,7 +56,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
 
         if (SysInfo.get(true).isConfig()) {
             try {
-                if (communicationThread != null && communicationThread.isAlive()) {
+                if (SysInfo.get().isConnected() && communicationThread != null && communicationThread.isAlive()) {
                     log.i(TAG, "  通讯 线程 正在 执行中 ... ");
                 } else {
                     int port = Integer.parseInt(SysInfo.get().getServerPort());
@@ -74,7 +73,6 @@ public class CommuntServer extends Service implements IActvityCommunication {
             }
         }
 
-
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -84,6 +82,8 @@ public class CommuntServer extends Service implements IActvityCommunication {
         log.e(TAG, "----------------------------------------onDestroy()");
         unregistBroad();
         stopCommThread();
+        stopAlarm(); //停止
+        stopVibrator();
     }
 
     public void receiveAppMsg(String message) {
@@ -191,7 +191,6 @@ public class CommuntServer extends Service implements IActvityCommunication {
         if (cmd.equals(CommunicationProtocol.SNTY)){
             //设置通讯状态
             SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_CALL,true);
-            log.i(TAG," SysInfo.get().getCommunicationState() -  "+ SysInfo.get().getCommunicationState());
             handler.post(runTGP);
         }
     }

@@ -60,7 +60,7 @@ public class LoginFragments extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = mActivity.getLayoutInflater().inflate(R.layout.login_layout, null);
+        View rootView = inflater.inflate(R.layout.login_layout, null);
         ButterKnife.bind(this, rootView);
         initData();
         return rootView;
@@ -83,8 +83,10 @@ public class LoginFragments extends Fragment {
     private void initData() {
         String ip = SysInfo.get().getServerIp();
         String port = SysInfo.get().getServerPort();
-        login_server_ip.setHint(ip);
-        login_server_port.setHint(port);
+        if (!"".equals(ip))
+                login_server_ip.setText(ip);
+        if (!"".equals(port))
+                login_server_port.setText(port);
         if (SysInfo.get().isConnected()) {
             mActivity.startCommunication();
             login_state.setText(mActivity.getString(R.string.login_state_connect_ing));//连接中
@@ -95,7 +97,9 @@ public class LoginFragments extends Fragment {
 
 
     @OnClick(R.id.login_button)
-    public void onClick() {
+    public void onClick(View view) {
+        mActivity.showTolas("连接服务器" +(SysInfo.get(true).isConnected()?"成功":"失败,请检查网络或ip是否正确"));
+        //输出的ip 地址 和保存的 ip地址 不同 -> 也需要连接
         if (!SysInfo.get(true).isConnected()) { //未连接 连接失败等
             String ip = login_server_ip.getText().toString().trim();
             String port = login_server_port.getText().toString().trim();
@@ -103,7 +107,7 @@ public class LoginFragments extends Fragment {
                 login_state.setText(mActivity.getString(R.string.login_state_connect_ing));//连接中
                 SysInfo.get().setServerIp(ip);
                 SysInfo.get().setServerPort(port);
-                SysInfo.get().setAppMac(AppsTools.getLocalMacAddressFromBusybox());
+                SysInfo.get().setAppMac(AppsTools.getMacAddress(mActivity));
                 SysInfo.get().writeInfo();
                 mActivity.startCommunication();
             }

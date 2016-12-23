@@ -152,10 +152,10 @@ public class SysInfo {
             FileUtils.writeFile(infos, content);//写入数据
             isConfig = true;
         } catch (Exception e) {
-            e.printStackTrace();
             isConfig = false;
             //删除文件
             FileUtils.deleteFile(infos);
+            e.printStackTrace();
         }
     }
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MPhone</string>
+    <string name="app_name">智慧银行传呼服务</string>
     
 
     <string name="server_ip"> 服务器地址 : </string>
@@ -19,6 +19,9 @@
     <string name="login_button">连接服务器</string>
 
 
-    <string name="show_server_sure">接受服务请求</string>
-    <string name="show_server_over">服务请求完成</string>
+    <string name="show_server_sure">接受服务</string>
+    <string name="show_server_refuse">拒绝服务</string>
+    <string name="show_server_over">结束服务</string>
+
+    <string name="title_close_app">结束通讯</string>
 </resources>

@@ -1,12 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <Button
-        android:id="@+id/show_button"
-        android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:text="@string/show_server_sure"
-        />
-</FrameLayout>
+        >
+        <Button
+            android:id="@+id/show_button_sure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/show_server_sure"
+            android:layout_gravity="center"
+            android:background="@drawable/button_access"
+            />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/show_button_refuse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/show_server_refuse"
+            android:background="@drawable/button_access"
+            />
+    </FrameLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/show_button_over"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/show_server_over"
+            android:background="@drawable/button_access"
+            />
+    </FrameLayout>
+</LinearLayout>

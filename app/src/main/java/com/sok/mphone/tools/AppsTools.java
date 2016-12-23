@@ -1,5 +1,8 @@
 package com.sok.mphone.tools;
 
+import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.util.Base64;
 
 import com.google.gson.Gson;
@@ -84,6 +87,21 @@ public class AppsTools {
 
 
 
+    public static String getMacAddress(Context context){
+
+        String mac = getLocalMacAddressFromBusybox();
+        if (mac==null)
+                mac = getLocalMacAddressFromWifiInfo(context);
+        return mac;
+    }
+
+
+    //根据Wifi信息获取本地Mac
+    public static String getLocalMacAddressFromWifiInfo(Context context){
+        WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = wifi.getConnectionInfo();
+        return info.getMacAddress();
+    }
 
 
 
@@ -100,6 +118,7 @@ public class AppsTools {
         //如果返回的result == null，则说明网络不可取
         if(result==null){
             System.out.println("网络出错，请检查网络");
+
             return null;
         }
         String Mac ;

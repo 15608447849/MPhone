@@ -27,8 +27,14 @@ public class ShowFragments extends Fragment {
 
     private BaseActivity mActivity;
 
-    @Bind(R.id.show_button)
-    Button show_button;
+    @Bind(R.id.show_button_sure)
+    Button show_button_sure; //接受
+
+    @Bind(R.id.show_button_refuse)
+    Button show_button_refuse;//拒绝
+
+    @Bind(R.id.show_button_over)
+    Button show_button_over;//结束
 
     @Override
     public void onAttach(Activity activity) {
@@ -44,7 +50,7 @@ public class ShowFragments extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = mActivity.getLayoutInflater().inflate(R.layout.show_layout, null);
+        View rootView = inflater.inflate(R.layout.show_layout, null);
         ButterKnife.bind(this, rootView);
         return rootView;
     }
@@ -69,25 +75,49 @@ public class ShowFragments extends Fragment {
 
 
 
-    @OnClick(R.id.show_button)
-    public void onClick() {
+    @OnClick({R.id.show_button_sure,R.id.show_button_refuse,R.id.show_button_over})
+    public void onClick(View view) {
         if (SysInfo.get(true).isConnected()) { //连接成功的
-            //发送接受请求
-            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + "[回执编号-200,已接受服务请求]");
+
+            swiBtn(view.getId());
+
         } else {
             //提示 未连接
-            mActivity.showTolas("未连接服务器");
+            mActivity.showTolas("连接服务器失败,尝试中...");
 //            重新选择页面
             mActivity.initFragments();
         }
     }
 
+    private void swiBtn(int id) {
+       if (id == R.id.show_button_sure){
+           //发送接受请求
+           mActivity.sendMessageToServers(CommunicationProtocol.ANTY + "回执编号-[202],已接受服务请求");
+       }
+        if (id == R.id.show_button_refuse){
+            //发送拒绝请求
+            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + "回执编号-[406]拒绝服务请求");
+        }
+        if (id == R.id.show_button_over){
+            //发送服务完成请求
+            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + "回执编号-[205]-结束服务请求");
+        }
+        setButtonClick(false);
+        mActivity.finish();
+    }
+
+
     //设置按钮是否可点击
     public void setButtonClick(boolean isClick){
-        if (show_button!=null){
-            show_button.setEnabled(isClick);
+        if (show_button_sure!=null){
+            show_button_sure.setEnabled(isClick);
         }
-
+        if (show_button_refuse!=null){
+            show_button_refuse.setEnabled(isClick);
+        }
+        if (show_button_over!=null){
+            show_button_over.setEnabled(!isClick);
+        }
     }
 
     public void initState(){
