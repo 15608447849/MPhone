@@ -84,6 +84,14 @@ public class CommuntServer extends Service implements IActvityCommunication {
         stopCommThread();
         stopAlarm(); //停止
         stopVibrator();
+        //设置状态
+      setSysyinif();
+    }
+
+    private void setSysyinif() {
+        SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE);
+        SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_FAILT);
+        SysInfo.get().writeInfo();
     }
 
     public void receiveAppMsg(String message) {

@@ -92,15 +92,15 @@ public class ShowFragments extends Fragment {
     private void swiBtn(int id) {
        if (id == R.id.show_button_sure){
            //发送接受请求
-           mActivity.sendMessageToServers(CommunicationProtocol.ANTY + "回执编号-[202],已接受服务请求");
+           mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_ACCEPT_SERVER);
        }
         if (id == R.id.show_button_refuse){
             //发送拒绝请求
-            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + "回执编号-[406]拒绝服务请求");
+            mActivity.sendMessageToServers(CommunicationProtocol.ANTY +  CommunicationProtocol.RECIPT_REFUSE_SERVER);
         }
         if (id == R.id.show_button_over){
             //发送服务完成请求
-            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + "回执编号-[205]-结束服务请求");
+            mActivity.sendMessageToServers(CommunicationProtocol.ANTY +  CommunicationProtocol.RECIPT_OVER_SERVER);
         }
         setButtonClick(false);
         mActivity.finish();

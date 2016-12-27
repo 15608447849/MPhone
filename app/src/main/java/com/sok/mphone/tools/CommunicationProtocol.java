@@ -11,4 +11,7 @@ public interface CommunicationProtocol {
     String SNTY = "SNTY:";
     //String app->服务器
     String ANTY = "ANTY:";
+    String RECIPT_ACCEPT_SERVER = "[202]";
+    String RECIPT_REFUSE_SERVER = "[406]";
+    String RECIPT_OVER_SERVER = "[205]";
 }
