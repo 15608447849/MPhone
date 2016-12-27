@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,9 +90,9 @@ public class AppsTools {
 
     public static String getMacAddress(Context context){
 
-        String mac = getLocalMacAddressFromBusybox();
+        String mac = getLocalMacAddressFromWifiInfo(context);
         if (mac==null)
-                mac = getLocalMacAddressFromWifiInfo(context);
+                mac = getLocalMacAddressFromBusybox();
         return mac;
     }
 
@@ -118,7 +119,6 @@ public class AppsTools {
         //如果返回的result == null，则说明网络不可取
         if(result==null){
             System.out.println("网络出错，请检查网络");
-
             return null;
         }
         String Mac ;
@@ -147,15 +147,13 @@ public class AppsTools {
             Process proc = Runtime.getRuntime().exec(cmd);
             InputStreamReader is = new InputStreamReader(proc.getInputStream());
             BufferedReader br = new BufferedReader(is);
-
             //执行命令cmd，只取结果中含有filter的这一行
             while ((line = br.readLine ()) != null && line.contains(filter)== false) {
                 System.out.println("line: "+line);
             }
-
             result = line;
         }
-        catch(Exception e) {
+        catch(IOException e) {
             e.printStackTrace();
         }
         return result;

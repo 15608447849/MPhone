@@ -116,17 +116,20 @@ public class LoginFragments extends Fragment {
 
 
     private void setEnable(boolean t) {
-        login_state.setEnabled(t);
+
         login_button.setEnabled(t);
+        login_state.setEnabled(t);
         login_server_ip.setEnabled(t);
         login_server_port.setEnabled(t);
     }
 
     public void setConnectSuccess() {
-        login_state.setText(mActivity.getString(R.string.login_state_connect_success));
-        setEnable(false);
+        if (login_state!=null){
+            login_state.setText(mActivity.getString(R.string.login_state_connect_success));
+            setEnable(false);//不可点击
+        }
         //转变页面
-        mActivity.initFragments();
+        mActivity.initFragments(false);//转变页面
     }
 
 

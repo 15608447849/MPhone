@@ -5,6 +5,9 @@ package com.sok.mphone.tools;
  */
 
 public interface CommunicationProtocol {
+    //app 上线
+    String AHOL = "AHOL:";
+
     // app 心跳 -  AHBT:macaddress
     String AHBT = "AHBT:";
     // 服务器 ->app 通知

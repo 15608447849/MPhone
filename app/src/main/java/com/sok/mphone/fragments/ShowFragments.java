@@ -58,7 +58,7 @@ public class ShowFragments extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        log.i("showfragments","onResume");
+        log.e("showfragments","onResume");
         initState();
     }
 
@@ -78,14 +78,9 @@ public class ShowFragments extends Fragment {
     @OnClick({R.id.show_button_sure,R.id.show_button_refuse,R.id.show_button_over})
     public void onClick(View view) {
         if (SysInfo.get(true).isConnected()) { //连接成功的
-
             swiBtn(view.getId());
-
         } else {
-            //提示 未连接
-            mActivity.showTolas("连接服务器失败,尝试中...");
-//            重新选择页面
-            mActivity.initFragments();
+            setConnectFailt();
         }
     }
 
@@ -102,13 +97,13 @@ public class ShowFragments extends Fragment {
             //发送服务完成请求
             mActivity.sendMessageToServers(CommunicationProtocol.ANTY +  CommunicationProtocol.RECIPT_OVER_SERVER);
         }
-        setButtonClick(false);
+        setMessageSendSuccess();
         mActivity.finish();
     }
 
 
-    //设置按钮是否可点击
-    public void setButtonClick(boolean isClick){
+
+    public void setButtonClick(boolean isClick,boolean isflag){
         if (show_button_sure!=null){
             show_button_sure.setEnabled(isClick);
         }
@@ -116,22 +111,36 @@ public class ShowFragments extends Fragment {
             show_button_refuse.setEnabled(isClick);
         }
         if (show_button_over!=null){
-            show_button_over.setEnabled(!isClick);
+            show_button_over.setEnabled(isflag);
         }
+    }
+
+    //设置按钮是否可点击
+    public void setButtonClick(boolean isClick){
+        setButtonClick(isClick,!isClick);
     }
 
     public void initState(){
+
         if (SysInfo.get(true).getCommunicationState().equals(SysInfo.COMUNICATE_STATES.COMMUNI_CALL)) {
             //有消息 - 按钮可点击
             setButtonClick(true);
-        }
-        if (SysInfo.get(true).getCommunicationState().equals(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE)){
+        }else{
             //没消息 - 按钮不可点击
             setButtonClick(false);
         }
+
     }
 
-    public void switchState() {
-        initState();
+
+
+    public void setConnectFailt() {
+        //提示 未连接
+        mActivity.showTolas("连接服务器失败,重新尝试中...");
+        setButtonClick(false,false);
+        mActivity.initFragments(true);
+    }
+    public void setMessageSendSuccess(){
+        setButtonClick(false);
     }
 }

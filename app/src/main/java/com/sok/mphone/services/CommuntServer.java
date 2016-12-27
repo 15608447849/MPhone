@@ -97,7 +97,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
     public void receiveAppMsg(String message) {
         if (message != null && !"".equals(message) && communicationThread != null) {
             if (message.contains(CommunicationProtocol.ANTY)) {
-                communicationThread.sendMessageToThread(message);//发送消息给服务器
+                communicationThread.sendMessageToThread(message+"-"+SysInfo.get().getAppMac());//发送消息给服务器
                 SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE,true);//保存呼叫状态
                 stopAlarm(); //停止
                 stopVibrator();
@@ -165,8 +165,10 @@ public class CommuntServer extends Service implements IActvityCommunication {
     @Override
     public void sendMessageToActivity(int type) {
         if (type == IActvityCommunication.CONNECT_SUCCEND) {
-            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_SUCCESS, true);
-            sendActivityMessage(type);
+            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_SUCCESS);
+            SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE, true);
+            communicationThread.sendMessageToThread(CommunicationProtocol.AHOL + SysInfo.get().getAppMac());
+            sendActivityMessage(type);//发送消息 到 activity - 链接成功
         }
         if (type == IActvityCommunication.CONNECT_ING) {
             //发送 mac 地址 ...
@@ -174,8 +176,12 @@ public class CommuntServer extends Service implements IActvityCommunication {
         }
         if (type == IActvityCommunication.CONNECT_NO_ING || type == IActvityCommunication.CONNECT_FAILT) {
             // 连接失败
-            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_FAILT,true);
-            sendActivityMessage(type);
+            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_FAILT);
+            SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE,true);//无消息状态
+            stopAlarm(); //停止
+            stopVibrator();
+            //通知activity 已发送
+            sendActivityMessage(type); //发送消息 到 activity - 链接失败
         }
     }
 
@@ -191,11 +197,15 @@ public class CommuntServer extends Service implements IActvityCommunication {
 
     @Override
     public void sendMessageToActivity(String message) {
-        postTask(message.substring(0, 5), message.substring(5));
+        try {
+            postTask(message.substring(0, 5), message.substring(5));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void postTask(String cmd, String command) {
-        log.i(" 收到 服务器 命令 - [" + cmd + "] - [" + command + "]");
+        log.i(" 收到 服务器 命令 - [" + cmd + "] , 参数 -[" + command + "]");
         if (cmd.equals(CommunicationProtocol.SNTY)){
             //设置通讯状态
             SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_CALL,true);

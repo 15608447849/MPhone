@@ -11,14 +11,6 @@ import com.sok.mphone.threads.interfaceDef.IThread;
 public class ReceiveThread extends IThread {
 
     private SocketBeads sBean;
-//    private boolean iii =true;
-//    if (iii){
-//        iii=false;
-//
-//        Thread.sleep(30*1000);
-//
-//        iActivity.sendMessageToActivity("SNTY:[测试命令]");
-//    }
 
     private IActvityCommunication iActivity;
 
