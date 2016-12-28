@@ -206,6 +206,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
 
     private void postTask(String cmd, String command) {
         log.i(" 收到 服务器 命令 - [" + cmd + "] , 参数 -[" + command + "]");
+
         if (cmd.equals(CommunicationProtocol.SNTY)){
             //设置通讯状态
             SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_CALL,true);
