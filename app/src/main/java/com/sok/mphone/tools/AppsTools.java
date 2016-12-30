@@ -1,9 +1,12 @@
 package com.sok.mphone.tools;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Base64;
+import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -158,4 +161,7 @@ public class AppsTools {
         }
         return result;
     }
+
+
+
 }

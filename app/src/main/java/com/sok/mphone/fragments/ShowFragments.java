@@ -25,6 +25,9 @@ import butterknife.OnClick;
 
 public class ShowFragments extends Fragment {
 
+    private static final String TAG = "ShowFrag";
+
+
     private BaseActivity mActivity;
 
     @Bind(R.id.show_button_sure)
@@ -34,7 +37,10 @@ public class ShowFragments extends Fragment {
     Button show_button_refuse;//拒绝
 
     @Bind(R.id.show_button_over)
-    Button show_button_over;//结束
+    Button show_button_over;//结束服务
+
+    @Bind(R.id.show_button_exit)
+    Button show_button_exit;//结束通讯
 
     @Override
     public void onAttach(Activity activity) {
@@ -52,13 +58,15 @@ public class ShowFragments extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.show_layout, null);
         ButterKnife.bind(this, rootView);
+        setButtonClick(1,false);
+        setNoShowButton(1);
         return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        log.e("showfragments","onResume");
+        log.e(TAG, "onResume");
         initState();
     }
 
@@ -74,8 +82,7 @@ public class ShowFragments extends Fragment {
     }
 
 
-
-    @OnClick({R.id.show_button_sure,R.id.show_button_refuse,R.id.show_button_over})
+    @OnClick({R.id.show_button_sure, R.id.show_button_refuse, R.id.show_button_over, R.id.show_button_exit})
     public void onClick(View view) {
         if (SysInfo.get(true).isConnected()) { //连接成功的
             swiBtn(view.getId());
@@ -85,62 +92,120 @@ public class ShowFragments extends Fragment {
     }
 
     private void swiBtn(int id) {
-       if (id == R.id.show_button_sure){
-           //发送接受请求
-           mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_ACCEPT_SERVER);
-       }
-        if (id == R.id.show_button_refuse){
+
+        if (id == R.id.show_button_sure) {
+            //发送接受请求
+            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_ACCEPT_SERVER);
+            setMessageSendSuccess(0);
+        }
+        if (id == R.id.show_button_refuse) {
             //发送拒绝请求
-            mActivity.sendMessageToServers(CommunicationProtocol.ANTY +  CommunicationProtocol.RECIPT_REFUSE_SERVER);
+            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_REFUSE_SERVER);
+            setMessageSendSuccess(0);
         }
-        if (id == R.id.show_button_over){
+        if (id == R.id.show_button_over) {
+            mActivity.showTolas("已告知完成服务");
             //发送服务完成请求
-            mActivity.sendMessageToServers(CommunicationProtocol.ANTY +  CommunicationProtocol.RECIPT_OVER_SERVER);
+            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_OVER_SERVER);
+            setMessageSendSuccess(1);
         }
-        setMessageSendSuccess();
+        if (id == R.id.show_button_exit) { //结束通讯服务
+            mActivity.showTolas("即将断开连接服务");
+            mActivity.stopCommunication();
+        }
         mActivity.finish();
     }
-
-
-
-    public void setButtonClick(boolean isClick,boolean isflag){
-        if (show_button_sure!=null){
-            show_button_sure.setEnabled(isClick);
-        }
-        if (show_button_refuse!=null){
-            show_button_refuse.setEnabled(isClick);
-        }
-        if (show_button_over!=null){
-            show_button_over.setEnabled(isflag);
-        }
+    //消息已发送出去
+    public void setMessageSendSuccess(int type) {
+        //设置 接受拒接 不可点击 - 消失
+        setButtonClick(type,false);
+        setNoShowButton(type);
     }
+
 
     //设置按钮是否可点击
-    public void setButtonClick(boolean isClick){
-        setButtonClick(isClick,!isClick);
-    }
-
-    public void initState(){
-
-        if (SysInfo.get(true).getCommunicationState().equals(SysInfo.COMUNICATE_STATES.COMMUNI_CALL)) {
-            //有消息 - 按钮可点击
-            setButtonClick(true);
-        }else{
-            //没消息 - 按钮不可点击
-            setButtonClick(false);
+    public void setButtonClick(int type, boolean isClick) {
+        if (type == 0) {  //拒绝 - 接受
+            if (show_button_sure != null) {
+                show_button_sure.setEnabled(isClick);
+            }
+            if (show_button_refuse != null) {
+                show_button_refuse.setEnabled(isClick);
+            }
+        }
+        if (type == 1) {//结束服务
+            if (show_button_over != null) {
+                show_button_over.setEnabled(isClick);
+            }
         }
 
     }
 
+
+    public void initState() {
+
+        //存在 呼叫任务 并且 有消息发来
+        if (SysInfo.get(true).isMessageTask() && SysInfo.get().isHasMessage()) {
+            //有消息 - 按钮显示 - 可点击
+            setShowButton(0);
+            setButtonClick(0, true);
+        } else {
+            setNoShowButton(0);
+            //没消息 - 按钮不可点击
+            setButtonClick(0, false);
+        }
+
+    }
+
+    //显示按钮
+    private void setShowButton(int type) {
+        if (type == 0) {
+            if (show_button_sure != null) {
+                show_button_sure.setVisibility(View.VISIBLE);
+            }
+            if (show_button_refuse != null) {
+                show_button_refuse.setVisibility(View.VISIBLE);
+            }
+        }
+        if (type == 1) {
+            show_button_over.setVisibility(View.VISIBLE);
+        }
+    }
+
+    //不显示按钮 - 接受拒绝按钮
+    private void setNoShowButton(int type) {
+        if (type == 0) {
+            if (show_button_sure != null) {
+                show_button_sure.setVisibility(View.INVISIBLE);
+            }
+            if (show_button_refuse != null) {
+                show_button_refuse.setVisibility(View.INVISIBLE);
+            }
+        }
+
+        if (type == 1) {
+            show_button_over.setVisibility(View.INVISIBLE);
+        }
+    }
 
 
     public void setConnectFailt() {
-        //提示 未连接
-        mActivity.showTolas("连接服务器失败,重新尝试中...");
-        setButtonClick(false,false);
+        setNoShowButton(0);
+        setButtonClick(0, false);
+        setNoShowButton(1);
+        setButtonClick(1, false);
+        //提示
+        mActivity.showTolas("连接服务器失败,请检查ip或端口是否正确");
         mActivity.initFragments(true);
     }
-    public void setMessageSendSuccess(){
-        setButtonClick(false);
+
+    public void showOverButton(){
+        //存在呼叫任务 并且 没有消息发来
+        if (!SysInfo.get(true).isHasMessage() && SysInfo.get().isMessageTask()){
+            setShowButton(1);
+            setButtonClick(1,true);
+        }
     }
+
+
 }

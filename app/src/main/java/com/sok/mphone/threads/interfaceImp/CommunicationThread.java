@@ -13,7 +13,7 @@ import com.sok.mphone.tools.log;
 public class CommunicationThread extends IThread {
 
     private SocketBeads sBean;
-    private int reCreateConnTime = 10 * 1000;
+    private int reCreateConnTime = 3 * 1000;
     private IActvityCommunication iActivity;
 
 

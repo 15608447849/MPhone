@@ -5,14 +5,15 @@ android:layout_width="match_parent"
 android:layout_height="wrap_content"
 android:orientation="horizontal"
 android:id="@+id/base_title"
-android:layout_alignParentTop="true">
-
-    <FrameLayout
-        android:layout_width="match_parent"
+android:layout_centerHorizontal="true"
+android:layout_marginTop="@dimen/y120"
+android:layout_marginBottom="@dimen/y152"
+>
+    <ImageView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/base_layout_1"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/title_icon"
         >
-
-    </FrameLayout>
-
+    </ImageView>
 </FrameLayout>

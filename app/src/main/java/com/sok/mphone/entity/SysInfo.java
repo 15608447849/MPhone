@@ -11,12 +11,16 @@ import cn.trinea.android.common.util.FileUtils;
 
 public class SysInfo {
 
+
+
     interface KEYS {
         String SERVER_IP = "SERVER_IP";
         String SERVER_PORT = "SERVER_PORT";
         String APP_MAC = "APP_MAC";
         String CONNECT_STATE = "CONNECT_STATE";
         String COMMUNICATION_STATE = "COMMUNICATION_STATE";
+        String CONNECT_POWER = "CONNECT_POWER";
+        String CALL_STATE = "CALL_STATE";
     }
 
     public interface CONN_STATES {
@@ -27,6 +31,17 @@ public class SysInfo {
         String COMMUNI_CALL = "hu_jiao_zhong";//呼叫中
         String COMMUNI_NO_MESSAGE = "mei_xiao_xi";//没消息
     }
+    public interface CALL_STATE{
+        String CALL_EXIST_TASK = "KONGXIAN";//空闲的
+        String CALL_NOT_TASK = "FANMAN";//正在服务中的
+    }
+
+
+    public interface COMUNICATE_POWER{
+        String COMMUNI_NO_ACCESS = "WU_QUAN_XIAN";//无权限
+        String COMMUNI_ACCESS = "you_quan_xian";//有权限
+    }
+
 
     private static final String infos = "/mnt/sdcard/wosapp.conf";
 
@@ -36,6 +51,8 @@ public class SysInfo {
     private String connectState =  CONN_STATES.CONN_FAILT;//连接状态
 
     private String communicationState = COMUNICATE_STATES.COMMUNI_NO_MESSAGE;//没消息
+    private String callState = CALL_STATE.CALL_EXIST_TASK;
+    private String connectPower = COMUNICATE_POWER.COMMUNI_ACCESS;
 
 
 
@@ -57,6 +74,46 @@ public class SysInfo {
         return get();
     }
 
+
+
+    public String getCallState() {
+        return callState;
+    }
+
+    public void setCallState(String callState) {
+        if (callState.equals(CALL_STATE.CALL_EXIST_TASK) || callState.equals(CALL_STATE.CALL_NOT_TASK)){
+            this.callState = callState;
+        }
+    }
+    public void setCallState(String callState,boolean flag) {
+        setCallState(callState);
+        if (flag) writeInfo();
+    }
+
+    //是否 有消息任务中
+    public boolean isMessageTask(){
+        return callState.equals(CALL_STATE.CALL_EXIST_TASK);
+    }
+
+    //是否有消息
+    public boolean isHasMessage(){
+        return communicationState.equals(COMUNICATE_STATES.COMMUNI_CALL);
+    }
+
+    public String getConnectPower() {
+        return connectPower;
+    }
+
+    //权限
+    public void setConnectPower(String connectPower) {
+        if (communicationState.equals(COMUNICATE_POWER.COMMUNI_ACCESS) || communicationState.equals(COMUNICATE_POWER.COMMUNI_NO_ACCESS)){
+            this.connectPower = connectPower;
+        }
+    }
+    //是否有权限
+    public boolean isAccess() {
+        return connectPower.equals(COMUNICATE_POWER.COMMUNI_ACCESS);
+    }
 
     //是否配置服务器信息
     public boolean isConfig() {
@@ -92,6 +149,7 @@ public class SysInfo {
             this.connectState = connectState;
         }
     }
+
     public void setConnectState(String connectState,boolean isSave) {
         if (connectState.equals(CONN_STATES.CONN_SUCCESS) || connectState.equals(CONN_STATES.CONN_FAILT)) {
             this.connectState = connectState;
@@ -159,6 +217,8 @@ public class SysInfo {
         }
     }
 
+
+
     //初始化数据- 赋值
     private void readValue() {
         try {
@@ -167,6 +227,8 @@ public class SysInfo {
             this.setAppMac(contentEntity.GetStringDefualt(KEYS.APP_MAC));
             this.setConnectState(contentEntity.GetStringDefualt(KEYS.CONNECT_STATE));
             this.setCommunicationState(contentEntity.GetStringDefualt(KEYS.COMMUNICATION_STATE));
+            this.setConnectPower(contentEntity.GetStringDefualt(KEYS.CONNECT_POWER));
+            this.setCallState(contentEntity.GetStringDefualt(KEYS.CALL_STATE));
             this.isConfig = true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -183,6 +245,8 @@ public class SysInfo {
             contentEntity.put(KEYS.APP_MAC, AppsTools.justIsEnptyToString(getAppMac()));
             contentEntity.put(KEYS.CONNECT_STATE, AppsTools.justIsEnptyToString(getConnectState()));
             contentEntity.put(KEYS.COMMUNICATION_STATE, AppsTools.justIsEnptyToString(getCommunicationState()));
+            contentEntity.put(KEYS.CONNECT_POWER, AppsTools.justIsEnptyToString(getConnectPower()));
+            contentEntity.put(KEYS.CALL_STATE, AppsTools.justIsEnptyToString(getCallState()));
         } catch (NullPointerException e) {
             e.printStackTrace();
             FileUtils.deleteFile(infos);

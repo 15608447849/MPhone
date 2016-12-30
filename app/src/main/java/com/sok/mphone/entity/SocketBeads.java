@@ -2,6 +2,7 @@ package com.sok.mphone.entity;
 
 import com.sok.mphone.tools.log;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,6 +17,7 @@ public class SocketBeads {
     private static final String TAG = "_SOCKET";
     private DataOutputStream dataOutputStream;
     private DataInputStream dataInputStream;
+
     private Socket socket;
     private String ip;
     private int port;// 6666
@@ -56,8 +58,9 @@ public class SocketBeads {
             if (socket == null) {
                 log.i(TAG,"尝试创建socket 连接...");
                 socket = new Socket(ip, port);
+                socket.setOOBInline(true);
                 dataOutputStream = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-                dataInputStream = new DataInputStream(socket.getInputStream());
+                dataInputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
                 isConnected = true;
                 log.i(TAG,"Communication connectToServer success >>  \n" + ip + " - " + port);
             }
@@ -147,7 +150,6 @@ public class SocketBeads {
 
             if (dataInputStream.available() > 0) {
                 msg = dataInputStream.readUTF();
-                log.i(TAG," 收到 服务器 参数[" + msg+"]");
             }
         }
         return msg;

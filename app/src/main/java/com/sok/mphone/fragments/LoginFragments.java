@@ -98,7 +98,7 @@ public class LoginFragments extends Fragment {
 
     @OnClick(R.id.login_button)
     public void onClick(View view) {
-        mActivity.showTolas("连接服务器" +(SysInfo.get(true).isConnected()?"成功":"失败,请检查网络或ip是否正确"));
+       // mActivity.showTolas("连接服务器" +(SysInfo.get(true).isConnected()?"成功":"失败,请检查网络或ip是否正确"));
         //输出的ip 地址 和保存的 ip地址 不同 -> 也需要连接
         if (!SysInfo.get(true).isConnected()) { //未连接 连接失败等
             String ip = login_server_ip.getText().toString().trim();
@@ -108,6 +108,7 @@ public class LoginFragments extends Fragment {
                 SysInfo.get().setServerIp(ip);
                 SysInfo.get().setServerPort(port);
                 SysInfo.get().setAppMac(AppsTools.getMacAddress(mActivity));
+                SysInfo.get().setConnectPower(SysInfo.COMUNICATE_POWER.COMMUNI_ACCESS);//设置有权限
                 SysInfo.get().writeInfo();
                 mActivity.startCommunication();
             }
@@ -124,10 +125,12 @@ public class LoginFragments extends Fragment {
     }
 
     public void setConnectSuccess() {
+
         if (login_state!=null){
             login_state.setText(mActivity.getString(R.string.login_state_connect_success));
             setEnable(false);//不可点击
         }
+        mActivity.showTolas("成功连接服务器");
         //转变页面
         mActivity.initFragments(false);//转变页面
     }

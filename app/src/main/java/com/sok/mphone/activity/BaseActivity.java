@@ -12,7 +12,6 @@ import com.sok.mphone.entity.SysInfo;
 import com.sok.mphone.fragments.IFragmentsFactory;
 import com.sok.mphone.fragments.LoginFragments;
 import com.sok.mphone.fragments.ShowFragments;
-import com.sok.mphone.fragments.TitleFragments;
 import com.sok.mphone.services.CommuntBroadCasd;
 import com.sok.mphone.services.CommuntServer;
 import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
@@ -23,7 +22,7 @@ public class BaseActivity extends Activity {
 
     private LoginFragments loginPage;
     private ShowFragments showPage;
-    private TitleFragments titlePage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,15 +34,21 @@ public class BaseActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+//        log.e(TAG, "onResume - ");
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
-        log.e(TAG, "onStart - ");
+//        log.e(TAG, "onStart - ");
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        log.e(TAG, "onRestart - ");
+//        log.e(TAG, "onRestart - ");
     }
 
     @Override
@@ -53,16 +58,17 @@ public class BaseActivity extends Activity {
 
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        log.e(TAG, "onResume - ");
-    }
-
-    @Override
     public void finish() {
         super.finish();
         //关闭窗体动画显示
         overridePendingTransition(R.anim.activity_open, R.anim.activity_close);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+//        deleteAllPage(true);
+        unregistBroad();
     }
 
     // 返回键
@@ -77,68 +83,51 @@ public class BaseActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        log.e(TAG, "onNewIntent - " + intent);
+//        log.e(TAG, "onNewIntent - " + intent);
     }
 
     public void initFragments(boolean isflag) {
-        deleteAllPage(isflag);
+        deleteAllPage(false);
         swithPage();
     }
 
 
     //删除所有 page
-    private void deleteAllPage(boolean isflag) {
-        if (titlePage != null) {
-//            IFragmentsFactory.removeFragment(getFragmentManager().beginTransaction(), titlePage);
-//            titlePage = null;
-        }
+    private void deleteAllPage(boolean flag) {
+        log.i(TAG,"deleteAllPage() - "+flag);
+
         if (loginPage != null) {
             IFragmentsFactory.removeFragment(getFragmentManager().beginTransaction(), loginPage);
-//            loginPage = null;
+            loginPage = null;
         }
         if (showPage != null) {
             IFragmentsFactory.removeFragment(getFragmentManager().beginTransaction(), showPage);
-//            showPage = null;
+            showPage = null;
         }
-//        if (isflag){
-//        titlePage = null;
-        loginPage = null;
-        showPage = null;
-//        }
     }
 
     //选择页面
     private void swithPage() {
-
-        //标题界面
-        if (titlePage == null) {
-            titlePage = (TitleFragments) IFragmentsFactory.getInstans(IFragmentsFactory.Type.title_page);
-            IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_1, titlePage);
-        }
+        log.i(TAG," swithPage() ");
 
 
-        //如果 已经 1配置 并且 2可连接状态
-        if (SysInfo.get(true).isConfig() && SysInfo.get().isConnected()) {  //显示 show页面 ,关闭 login页面 -> 已配置 并且 可连接
+        //如果 已经 --> 1配置 并且 2可连接状态 3.有权限访问
+        if (SysInfo.get(true).isConfig() && SysInfo.get().isConnected() && SysInfo.get().isAccess()) {  // 已配置 并且 可连接  - > 显示 show页面 ,关闭 login页面 ->
+            log.i(TAG,"  show page - -");
             if (showPage == null) {
                 showPage = (ShowFragments) IFragmentsFactory.getInstans(IFragmentsFactory.Type.show_page);
             }
             IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_3, showPage);
+            startCommunication();
         } else {
+            log.i(TAG,"  login page - -");
             if (loginPage == null) {
                 loginPage = (LoginFragments) IFragmentsFactory.getInstans(IFragmentsFactory.Type.login_page);
             }
             IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_2, loginPage);
         }
-
-        startCommunication();
     }
 
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregistBroad();
-    }
 
     private BaseBroad appReceive = null;
 
@@ -194,32 +183,62 @@ public class BaseActivity extends Activity {
     }
 
     public void receiveServerMessage(int type) {
-        log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "]");
-        if (type == IActvityCommunication.CONNECT_SUCCEND ) {
+
+        if (type == IActvityCommunication.CONNECT_SUCCEND) {
             //连接成功
+            log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 连接成功");
             if (loginPage != null) {//如果现在是登陆页面
                 loginPage.setConnectSuccess();
             }
         }
-        if (type == IActvityCommunication.MESSAGE_SEND_SUCCESS){
+        if (type == IActvityCommunication.MESSAGE_SEND_SUCCESS) {
             // 消息发送成功
-            if (showPage != null) {//现在是显示状态
-                showPage.setMessageSendSuccess();
-            }
+//            log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 消息发送成功");
+//            if (showPage != null) {//现在 - 显示状态
+//                showPage.setMessageSendSuccess();
+//            }
         }
         if (type == IActvityCommunication.CONNECT_FAILT) {
             // 连接失败
+            log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 连接失败");
             if (showPage != null) {//现在是显示状态
                 showPage.setConnectFailt();
             }
         }
-    }
+        if (type == IActvityCommunication.CONNECT_IS_NOT_ACCESS) {
+            // 无权访问
+            log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 无权访问服务器");
+            showTolas("无访问权限,请联系客服");
+            stopCommunication();
+            this.finish();
+        }
+        if (type == IActvityCommunication.CONNECT_ING_FREE){
+            //空闲
+            log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 空闲");
+            if (showPage != null) {//现在 - 显示状态
+                showPage.setMessageSendSuccess(0);
+                showPage.setMessageSendSuccess(1);
+            }
+        }
 
+        if (type == IActvityCommunication.CONNECT_ING_NOTFREE){ //繁忙
+            log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 繁忙");
+            if (showPage != null) {//显示 - 结束服务
+                showPage.showOverButton();
+            }
+        }
+
+
+
+
+
+
+    }
 
 
     //吐司
     public void showTolas(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
 

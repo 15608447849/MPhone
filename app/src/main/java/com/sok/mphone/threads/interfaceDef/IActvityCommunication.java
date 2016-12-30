@@ -11,6 +11,10 @@ public interface IActvityCommunication {
     public int CONNECT_NO_ING = 0x03;//未连接
     public int MESSAGE_SEND_SUCCESS = 0x04; //APP - > SERVER ,MESSAGE OK
     public int MESSAGE_RECEIVE_SUCCESS = 0x05;// SERVER -> APP . MESSAGE OK
+    public int  CONNECT_IS_ACCESS = 0x08;//有权限
+    public int  CONNECT_IS_NOT_ACCESS = 0x09;//无权限
+    public int CONNECT_ING_NOTFREE = 0x10;// 繁忙 - 结束服务
+    public int CONNECT_ING_FREE = 0x11;//空闲
 
     void sendMessageToActivity(int type);
     void sendMessageToActivity(String message);

@@ -1,50 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
-
     <FrameLayout
+        android:id="@+id/s_layout1"
         android:layout_width="match_parent"
-        android:layout_weight="1"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="@dimen/y32"
         >
         <Button
+            style="@style/show_page_button_style"
             android:id="@+id/show_button_sure"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="@string/show_server_sure"
+
             android:layout_gravity="center"
-            android:background="@drawable/button_access"
+            android:background="@drawable/button_green"
             />
     </FrameLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:id="@+id/s_layout2"
+        android:layout_below="@+id/s_layout1"
+        android:layout_marginBottom="@dimen/y32"
+
+        >
         <Button
+            style="@style/show_page_button_style"
             android:id="@+id/show_button_refuse"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/show_server_refuse"
-            android:background="@drawable/button_access"
+            android:background="@drawable/button_green"
             />
     </FrameLayout>
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/show_button_over"
-            android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/s_layout3"
+        android:layout_below="@+id/s_layout2"
+        >
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/show_server_over"
-            android:background="@drawable/button_access"
-            />
-    </FrameLayout>
-</LinearLayout>
+            >
+            <Button
+                style="@style/show_page_button_style"
+                android:id="@+id/show_button_over"
+                android:layout_gravity="right"
+                android:layout_marginRight="@dimen/x20"
+                android:text="@string/show_server_over"
+                android:background="@drawable/button_black"
+                />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content">
+
+            <Button
+                style="@style/show_page_button_style"
+                android:id="@+id/show_button_exit"
+                android:text="@string/title_close_app"
+                android:layout_gravity="left"
+                android:layout_marginLeft="@dimen/x20"
+                android:background="@drawable/button_black"
+                />
+        </FrameLayout>
+
+    </LinearLayout>
+</RelativeLayout>

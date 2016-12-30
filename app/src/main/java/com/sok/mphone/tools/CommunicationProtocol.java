@@ -17,4 +17,11 @@ public interface CommunicationProtocol {
     String RECIPT_ACCEPT_SERVER = "[202]";
     String RECIPT_REFUSE_SERVER = "[406]";
     String RECIPT_OVER_SERVER = "[205]";
+    String Receive_Calls_With_Out_The_Click_Of_A_Button = "[300]";
+
+    String CMD_CALL_ING = "true";//呼叫中
+    String CMD_NOT_ACCESS = "false";//无权限
+    String CMD_FREE = "free";//空闲
+    String CMD_NOT_FREE = "nofree";//繁忙
+
 }

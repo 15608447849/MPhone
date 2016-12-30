@@ -1,76 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    >
 
-
+    <!-- 状态 -->
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true"
+            android:id="@+id/login_state"
+            android:text="@string/login_state_connect_not"
+            android:textColor="@color/text_color_1"
+            android:layout_marginBottom="@dimen/y40"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            />
+    <!-- ip -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="@dimen/x460"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@android:color/black"
-        android:orientation="vertical"
-
-        >
-
-        <!-- 服务器地址 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:id="@+id/lg_layout_1"
+        android:layout_below="@+id/login_state"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/y42">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/login_textsize.color.scale.backgauge"
-                android:text="@string/server_ip" />
-            <EditText
-                android:id="@+id/login_server_ip"
-                style="@style/login_textsize.editcolor.edit_scale.backgauge.single"
-                android:hint="@string/input_server_ip" />
-        </LinearLayout>
-        <!-- 服务器端口 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+            android:textColor="@color/text_color_2"
+            android:text="@string/server_ip"
+            android:textSize="@dimen/x28"
+            android:singleLine="true"
+            android:layout_marginLeft="@dimen/x10"
+            />
+        <EditText
+            android:id="@+id/login_server_ip"
+            android:layout_weight="2"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <TextView
-                style="@style/login_textsize.color.scale.backgauge"
-                android:text="@string/server_port" />
-            <EditText
-                android:id="@+id/login_server_port"
-                style="@style/login_textsize.editcolor.edit_scale.backgauge.single"
-                android:hint="@string/input_server_port" />
-        </LinearLayout>
-
-        <!-- 按钮 和 状态 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/login_textsize.color.scale.backgauge"
-                android:text="@string/login_state" />
-
-            <TextView
-                android:id="@+id/login_state"
-                style="@style/login_textsize.editcolor.edit_scale.backgauge.single"
-                android:text="@string/login_state_connect_not"
-                android:textColor="@color/text_color_1" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="15dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/login_button"
-                style="@style/login_textsize.color.scale.backgauge"
-                android:text="@string/login_button"
-                android:background="@drawable/button_access"
-                />
-        </LinearLayout>
+            android:hint="@string/input_server_ip"
+            android:textSize="@dimen/x28"
+            android:singleLine="true"
+            android:textColor="@color/text_color_2"
+            android:background="@android:color/transparent"
+            />
     </LinearLayout>
+    <!-- 端口 -->
+    <LinearLayout
+        android:layout_width="@dimen/x460"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/lg_layout_2"
+        android:layout_below="@+id/lg_layout_1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/y60"
+        >
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_color_2"
+            android:text="@string/server_port"
+            android:textSize="@dimen/x28"
+            android:singleLine="true"
+            android:layout_marginLeft="@dimen/x10"
+            />
+        <EditText
+            android:id="@+id/login_server_port"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/input_server_port"
+            android:textSize="@dimen/x28"
+            android:singleLine="true"
+            android:textColor="@color/text_color_2"
+            android:background="@android:color/transparent"
+            />
+    </LinearLayout>
+    <!-- 连接按钮 -->
+
+
+    <Button
+        style="@style/show_page_button_style"
+        android:id="@+id/login_button"
+        android:text="@string/login_button"
+        android:background="@drawable/button_green"
+        android:layout_below="@+id/lg_layout_2"
+        android:layout_centerHorizontal="true"
+        />
+
 </RelativeLayout>

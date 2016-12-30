@@ -12,7 +12,6 @@ public class IFragmentsFactory {
     public interface Type{
         int login_page = 0x00;
         int show_page = 0x01;
-        int title_page = 0x04;
     }
 
     public static Fragment getInstans(int tag){
@@ -24,30 +23,32 @@ public class IFragmentsFactory {
         if(tag == IFragmentsFactory.Type.show_page){
             frag = new ShowFragments();
         }
-        if(tag == IFragmentsFactory.Type.title_page){
-            frag = new TitleFragments();
-        }
+
         return frag;
     }
 
 
     public static void removeFragment(FragmentTransaction ft,Fragment frament){
         ft.remove(frament);
-        ft.commit();
+//        ft.commit();
+        ft.commitAllowingStateLoss();
     }
 
     public static void repeateFragment(FragmentTransaction ft,int layout_rid,Fragment frament){
         ft.replace(layout_rid,frament);
-        ft.commit();
+//        ft.commit();
+        ft.commitAllowingStateLoss();
     }
 
     public static void addFragment(FragmentTransaction ft,int layout_rid,Fragment frament,String tag){
         ft.add(layout_rid,frament,tag);
-        ft.commit();
+//        ft.commit();
+        ft.commitAllowingStateLoss();
     }
     public static void addFragment(FragmentTransaction ft,int layout_rid,Fragment frament){
         ft.add(layout_rid,frament);
-        ft.commit();
+//        ft.commit();
+        ft.commitAllowingStateLoss();
     }
 
 }
