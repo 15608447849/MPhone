@@ -145,7 +145,7 @@ public class ShowFragments extends Fragment {
     public void initState() {
 
         //存在 呼叫任务 并且 有消息发来
-        if (SysInfo.get(true).isMessageTask() && SysInfo.get().isHasMessage()) {
+        if (SysInfo.get(true).isHasMessage() && SysInfo.get(true).isMessageTask()) {
             //有消息 - 按钮显示 - 可点击
             setShowButton(0);
             setButtonClick(0, true);

@@ -19,6 +19,7 @@ import com.sok.mphone.tools.AppsTools;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 
 /**
  * Created by user on 2016/12/19.
@@ -115,6 +116,11 @@ public class LoginFragments extends Fragment {
         }
     }
 
+    @OnLongClick(R.id.login_button)
+    public boolean OnLongClick(View view){
+        login_state.setText(AppsTools.getMacAddress(mActivity));//显示mac地址
+        return true;
+    }
 
     private void setEnable(boolean t) {
 

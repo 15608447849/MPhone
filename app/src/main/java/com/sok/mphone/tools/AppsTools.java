@@ -1,12 +1,9 @@
 package com.sok.mphone.tools;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Base64;
-import android.util.DisplayMetrics;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -96,7 +93,21 @@ public class AppsTools {
         String mac = getLocalMacAddressFromWifiInfo(context);
         if (mac==null)
                 mac = getLocalMacAddressFromBusybox();
-        return mac;
+
+        StringBuilder result = new StringBuilder();
+        if(mac.length()>1){
+            mac = mac.replaceAll(" ", "");
+            String[] tmp = mac.split(":");
+            for(int i = 0;i<tmp.length;++i){
+                result.append(tmp[i]);
+                if (i<tmp.length-1){
+                   result.append("-");
+                }
+            }
+        }else{
+            result.append("00-00-00-00-00-00");
+        }
+        return result.toString().toUpperCase();
     }
 
 
@@ -129,15 +140,6 @@ public class AppsTools {
         //例如：eth0      Link encap:Ethernet  HWaddr 00:16:E8:3E:DF:67
         if(result.length()>0 && result.contains("HWaddr")==true){
             Mac = result.substring(result.indexOf("HWaddr")+6, result.length()-1);
-
-            if(Mac.length()>1){
-                Mac = Mac.replaceAll(" ", "");
-                result = "";
-                String[] tmp = Mac.split(":");
-                for(int i = 0;i<tmp.length;++i){
-                    result +=tmp[i]+"-";
-                }
-            }
             result = Mac;
                    }
         return result;

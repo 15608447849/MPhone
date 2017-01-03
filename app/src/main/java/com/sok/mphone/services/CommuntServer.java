@@ -95,13 +95,9 @@ public class CommuntServer extends Service implements IActvityCommunication {
             SysInfo.get().setConnectPower(SysInfo.COMUNICATE_POWER.COMMUNI_NO_ACCESS); //无连接权限
         }
         //SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE);//无消息
-        //SysInfo.get().setCallState(SysInfo.CALL_STATE.CALL_NOT_TASK);//不存在呼叫任务
-        SysInfo.get().writeInfo();
         SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_FAILT);//无可连接
-
-
-
-
+        SysInfo.get().setCallState(SysInfo.CALL_STATE.CALL_NOT_TASK);//不存在呼叫任务
+        SysInfo.get().writeInfo();
     }
 
     //接受 应用-activity - showpage - 发来的消息
@@ -188,7 +184,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
         }
         if (type == IActvityCommunication.CONNECT_NO_ING || type == IActvityCommunication.CONNECT_FAILT) {
             // 连接失败
-            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_FAILT,true);
+            setSysyinif(false);
 //            SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE, true);//无消息状态
             //取消延时任务
             handler.removeCallbacks(runFunc2);
@@ -223,7 +219,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
 
         if (cmd.equals(CommunicationProtocol.SNTY)) {
             if (command.equalsIgnoreCase(CommunicationProtocol.CMD_NOT_ACCESS)) {
-                //断开连接 - 提示
+                //断开连接 - 无权限链接- 提示
                 stopCommThread();
                 setSysyinif(true);
                 sendActivityMessage(CONNECT_IS_NOT_ACCESS);
