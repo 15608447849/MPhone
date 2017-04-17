@@ -3,6 +3,7 @@ package com.sok.mphone.tools;
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.util.Base64;
 
 import com.google.gson.Gson;
@@ -12,7 +13,11 @@ import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -90,13 +95,20 @@ public class AppsTools {
 
     public static String getMacAddress(Context context){
 
-        String mac = getLocalMacAddressFromWifiInfo(context);
-        if (mac==null)
-                mac = getLocalMacAddressFromBusybox();
-
+        String mac = null;
+        int sysVersion = Integer.parseInt(Build.VERSION.SDK);
+        if (sysVersion>=23){
+            mac = getMacAddrForSDK23();
+            if (!mac.equals("02:00:00:00:00:00")) return mac;
+        }
+        mac = getLocalMacAddressFromWifiInfo(context);
+        if (mac==null || mac.equals(""))
+            mac = getMacAddress();
+        if (mac==null || mac.equals(""))
+            mac = getLocalMacAddressFromBusybox();
         StringBuilder result = new StringBuilder();
         if(mac.length()>1){
-            mac = mac.replaceAll(" ", "");
+            mac = mac.replaceAll("\\s+", "");
             String[] tmp = mac.split(":");
             for(int i = 0;i<tmp.length;++i){
                 result.append(tmp[i]);
@@ -107,19 +119,70 @@ public class AppsTools {
         }else{
             result.append("00-00-00-00-00-00");
         }
+
         return result.toString().toUpperCase();
     }
-
-
     //根据Wifi信息获取本地Mac
     public static String getLocalMacAddressFromWifiInfo(Context context){
         WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifi.getConnectionInfo();
         return info.getMacAddress();
     }
+    //android 6.0 获取mac地址 02-00-00-00-00 解决
+    public static String getMacAddrForSDK23() {
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    return "";
+                }
+
+                StringBuilder res1 = new StringBuilder();
+                for (byte b : macBytes) {
+                    res1.append(String.format("%02X:",b));
+                }
+
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                return res1.toString();
+            }
+        } catch (Exception ex) {
+        }
+        return "02:00:00:00:00:00";
+    }
 
 
-
+    //本地以太网mac地址文件
+    private static String getMacAddress()
+    {
+        String strMacAddr = "";
+        byte[] b;
+        try
+        {
+            NetworkInterface NIC = NetworkInterface.getByName("eth0");
+            b = NIC.getHardwareAddress();
+            StringBuffer buffer = new StringBuffer();
+            for (int i = 0; i < b.length; i++)
+            {
+                if (i != 0 || i!=b.length-1)
+                {
+                    buffer.append('-');
+                }
+                String str = Integer.toHexString(b[i] & 0xFF);
+                buffer.append(str.length() == 1 ? 0 + str : str);
+            }
+            strMacAddr = buffer.toString().toUpperCase();
+        }
+        catch (SocketException e)
+        {
+            e.printStackTrace();
+        }
+        return strMacAddr;
+    }
 
     //获取mac 地址 函数
     /**
