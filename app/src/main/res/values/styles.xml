@@ -3,11 +3,6 @@
     <style name="AppLaucherTheme" >
         <item name="android:windowNoTitle">true</item>
     </style>
-
-
-
-
-
     <!-- show page button slyte -->
     <style name="show_page_button_style">
         <item name="android:layout_width">wrap_content</item>
@@ -16,7 +11,23 @@
         <item name="android:gravity">center</item>
         <item name="android:textSize">24sp</item>
     </style>
-
-
-
+    <style name="server_not_permission_style">
+        <!--窗口背景色-->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!--Dialog的windowFrame框为无-->
+        <item name="android:windowFrame">@null</item>
+       <!--无标题栏-->
+        <item name="android:windowNoTitle">true</item>
+        <!--窗口是否半透明——是（与第一条配合使用）-->
+        <item name="android:windowIsFloating">true</item>
+        <!--是否浮现在activity之上-->
+        <item name="android:windowIsTranslucent">true</item>
+        <!--这个不设置的话，可能会出现边框黑线-->
+        <item name="android:windowContentOverlay">@null</item>
+        <!--窗口弹出效果-->
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <!--是否允许背景模糊-->
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
 </resources>
+

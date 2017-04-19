@@ -136,7 +136,8 @@ public class LoginFragments extends Fragment {
             login_state.setText(mActivity.getString(R.string.login_state_connect_success));
             setEnable(false);//不可点击
         }
-        mActivity.showTolas("成功连接服务器");
+//        mActivity.showTolas("成功连接服务器");
+
         //转变页面
         mActivity.initFragments(false);//转变页面
     }

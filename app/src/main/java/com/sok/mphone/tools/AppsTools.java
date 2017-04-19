@@ -96,20 +96,21 @@ public class AppsTools {
     public static String getMacAddress(Context context){
 
         String mac = null;
-        int sysVersion = Integer.parseInt(Build.VERSION.SDK);
-        if (sysVersion>=23){
+        if ( Integer.parseInt(Build.VERSION.SDK)>=23){
             mac = getMacAddrForSDK23();
-            if (!mac.equals("02:00:00:00:00:00")) return mac;
         }
-        mac = getLocalMacAddressFromWifiInfo(context);
-        if (mac==null || mac.equals(""))
-            mac = getMacAddress();
-        if (mac==null || mac.equals(""))
-            mac = getLocalMacAddressFromBusybox();
+        if (mac==null || mac.equals("")){
+            mac = getLocalMacAddressFromWifiInfo(context);
+            if (mac==null || mac.equals(""))
+                mac = getMacAddress();
+            if (mac==null || mac.equals(""))
+                mac = getLocalMacAddressFromBusybox();
+
+        }
         StringBuilder result = new StringBuilder();
         if(mac.length()>1){
             mac = mac.replaceAll("\\s+", "");
-            String[] tmp = mac.split(":");
+            String[] tmp = mac.trim().split(":");
             for(int i = 0;i<tmp.length;++i){
                 result.append(tmp[i]);
                 if (i<tmp.length-1){
@@ -119,14 +120,18 @@ public class AppsTools {
         }else{
             result.append("00-00-00-00-00-00");
         }
+        mac = result.toString();
+        if (mac.equals("02-00-00-00-00-00")){
+            mac = getBuildInfo();
+        }
 
-        return result.toString().toUpperCase();
+        return mac.toUpperCase();
     }
     //根据Wifi信息获取本地Mac
     public static String getLocalMacAddressFromWifiInfo(Context context){
         WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifi.getConnectionInfo();
-        return info.getMacAddress();
+        return info.getMacAddress()==null?"":info.getMacAddress();
     }
     //android 6.0 获取mac地址 02-00-00-00-00 解决
     public static String getMacAddrForSDK23() {
@@ -189,35 +194,27 @@ public class AppsTools {
      * get mac
      */
     public static String getLocalMacAddressFromBusybox(){
-        String result;
-
-        result = callCmd("busybox ifconfig","HWaddr");
-
-        //如果返回的result == null，则说明网络不可取
-        if(result==null){
-            System.out.println("网络出错，请检查网络");
-            return null;
+        String result = callCmd("busybox ifconfig","HWaddr");
+        if(result.equals("")){
+            return "";
         }
-        String Mac ;
-        //对该行数据进行解析
-        //例如：eth0      Link encap:Ethernet  HWaddr 00:16:E8:3E:DF:67
-        if(result.length()>0 && result.contains("HWaddr")==true){
-            Mac = result.substring(result.indexOf("HWaddr")+6, result.length()-1);
-            result = Mac;
-                   }
+
+        //例如：eth0    Link encap:Ethernet  HWaddr 00:16:E8:3E:DF:67
+        if(result.length()>0 && result.contains("HWaddr")){
+            result = result.substring(result.indexOf("HWaddr")+6, result.length()-1);
+          }
         return result;
     }
     private static String callCmd(String cmd,String filter) {
-        String result =null;
-
+        String result ="";
         try {
             String line ;
             Process proc = Runtime.getRuntime().exec(cmd);
             InputStreamReader is = new InputStreamReader(proc.getInputStream());
             BufferedReader br = new BufferedReader(is);
             //执行命令cmd，只取结果中含有filter的这一行
-            while ((line = br.readLine ()) != null && line.contains(filter)== false) {
-                System.out.println("line: "+line);
+            while ((line = br.readLine ()) != null && !line.contains(filter)) {
+//                System.out.println("line: "+line);
             }
             result = line;
         }
@@ -228,5 +225,22 @@ public class AppsTools {
     }
 
 
+    public static String getBuildInfo() {
+        String m_szDevIDShort = "35" + //we make this look like a valid IMEI
 
+                Build.BOARD.length()%10 +
+                Build.BRAND.length()%10 +
+                Build.CPU_ABI.length()%10 +
+                Build.DEVICE.length()%10 +
+                Build.DISPLAY.length()%10 +
+                Build.HOST.length()%10 +
+                Build.ID.length()%10 +
+                Build.MANUFACTURER.length()%10 +
+                Build.MODEL.length()%10 +
+                Build.PRODUCT.length()%10 +
+                Build.TAGS.length()%10 +
+                Build.TYPE.length()%10 +
+                Build.USER.length()%10 ;
+        return m_szDevIDShort;
+    }
 }

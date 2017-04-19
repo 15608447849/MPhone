@@ -6,7 +6,7 @@ package com.sok.mphone.tools;
 
 public class log {
     public static boolean isDebug = true;
-    public static final String TAG = "颖网_app:";
+    public static final String TAG = "颖网_传呼机:";
     public static final String ERR_LOG  = " 错误信息 : \n";
     public static void d(String tag, String msg) {
         if (isDebug) {

@@ -1,9 +1,14 @@
 package com.sok.mphone.activity;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
@@ -24,14 +29,29 @@ public class BaseActivity extends Activity {
     private ShowFragments showPage;
 
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         overridePendingTransition(R.anim.activity_open, R.anim.activity_close);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
+
+        //如果6.0 - 23 以上
+        if (Integer.parseInt(Build.VERSION.SDK)>=23){
+            if ( ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+            ){
+                startActivity(new Intent(this,PermissionActivity.class));
+                finish();
+                return;
+            }
+        }
+
         registBroad();
         initFragments(true);
     }
+
 
     @Override
     protected void onResume() {
@@ -67,7 +87,7 @@ public class BaseActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        deleteAllPage(true);
+//      deleteAllPage(true);
         unregistBroad();
     }
 
@@ -109,8 +129,6 @@ public class BaseActivity extends Activity {
     //选择页面
     private void swithPage() {
         log.i(TAG," swithPage() ");
-
-
         //如果 已经 --> 1配置 并且 2可连接状态 3.有权限访问
         if (SysInfo.get(true).isConfig() && SysInfo.get().isConnected() && SysInfo.get().isAccess()) {  // 已配置 并且 可连接  - > 显示 show页面 ,关闭 login页面 ->
             log.i(TAG,"  show page - -");
@@ -208,8 +226,10 @@ public class BaseActivity extends Activity {
         if (type == IActvityCommunication.CONNECT_IS_NOT_ACCESS) {
             // 无权访问
             log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 无权访问服务器");
-            showTolas("无访问权限,请联系客服");
+//            showTolas("无访问权限,请联系客服");
             stopCommunication();
+            startActivity(new Intent(this,ServerNotPermissionActivity.class));
+            //弹出提示窗口
             this.finish();
         }
         if (type == IActvityCommunication.CONNECT_ING_FREE){

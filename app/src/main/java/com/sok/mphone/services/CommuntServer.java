@@ -1,18 +1,25 @@
 package com.sok.mphone.services;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 
 import com.sok.mphone.activity.BaseActivity;
 import com.sok.mphone.activity.BaseBroad;
@@ -75,7 +82,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;//super.onStartCommand(intent, flags, startId);
     }
 
     @Override
@@ -173,9 +180,9 @@ public class CommuntServer extends Service implements IActvityCommunication {
     @Override
     public void sendMessageToActivity(int type) {
         if (type == IActvityCommunication.CONNECT_SUCCEND) {
-            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_SUCCESS,true);
+            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_SUCCESS, true);
 //            SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE, true);
-            communicationThread.sendMessageToThread(CommunicationProtocol.AHOL + SysInfo.get(true).getAppMac() +(SysInfo.get().isHasMessage()?"-"+CommunicationProtocol.Receive_Calls_With_Out_The_Click_Of_A_Button:""));
+            communicationThread.sendMessageToThread(CommunicationProtocol.AHOL + SysInfo.get(true).getAppMac() + (SysInfo.get().isHasMessage() ? "-" + CommunicationProtocol.Receive_Calls_With_Out_The_Click_Of_A_Button : ""));
             sendActivityMessage(type);//发送消息 到 activity - 连接成功
         }
         if (type == IActvityCommunication.CONNECT_ING) {
@@ -284,15 +291,15 @@ public class CommuntServer extends Service implements IActvityCommunication {
 //--效果
 
     private void startEffect() {
-        startFlashing();//打开闪光灯
-        startAlarm();
         startVibrator();
+        startAlarm();
+        startFlashing();//打开闪光灯
     }
 
     private void stopEffect() {
-        stopFlashing();//关闭闪光灯
-        stopAlarm();
         stopVibrator();
+        stopAlarm();
+        stopFlashing();//关闭闪光灯
     }
 
     //震动需要的
@@ -359,18 +366,116 @@ public class CommuntServer extends Service implements IActvityCommunication {
         }
     }
 
+    /*****************************************
+     * 闪光灯
+     ****************************************/
+    //sdk<23
     private Camera camera = null;
     private Camera.Parameters parameters;
+
     //打开闪光灯
     private void startFlashing() {
-        if (camera==null){
-            camera =  Camera.open();
-            camera.startPreview();
-            handler.postDelayed(flashingRunnable,1200);
+        if (!getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
+            return;
+        if (Integer.parseInt(Build.VERSION.SDK) >= 21) {
+            startFlashingSDK23();
+        } else {
+            startFlashingSDK19();
+        }
+
+    }
+
+    private void startFlashingSDK19() {
+        if (camera == null) {
+            camera = Camera.open();
+            parameters = camera.getParameters();
+            handler.post(flashingRunnable);
         }
     }
 
-    //闪光灯 闪烁
+    //sdk>=23
+    CameraManager mCameraManager = null;
+    String mCameraId = null;
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void startFlashingSDK23() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        try {
+            mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            mCameraId = mCameraManager.getCameraIdList()[0];
+            if (mCameraManager != null && mCameraId != null) {
+                int flag = mCameraManager.getCameraCharacteristics(mCameraId).get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+//                log.e(TAG,"是不是支持:"+flag);
+                if (flag == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY) {
+                    //调用旧版本
+                    throw new IllegalStateException("plase laegacy camera api");
+                }
+                handler.post(SDK_M_flashingRunnable);
+            }
+        } catch (Exception e) {
+//            e.printStackTrace();
+            mCameraId = null;
+            mCameraManager = null;
+            startFlashingSDK19();
+        }
+    }
+
+    //打开闪光灯
+    @TargetApi(Build.VERSION_CODES.M)
+    public void turnOnFlashLight() {
+        try {
+            if (mCameraManager != null && mCameraId != null) {
+                mCameraManager.setTorchMode(mCameraId, true);
+            }
+        } catch (Exception e) {
+//            e.printStackTrace();
+        }
+    }
+
+    //关闭闪光灯
+    @TargetApi(Build.VERSION_CODES.M)
+    public void turnOffFlashLight() {
+        try {
+            if (mCameraManager != null && mCameraId != null) {
+                mCameraManager.setTorchMode(mCameraId, false);
+            }
+        } catch (Exception e) {
+//            e.printStackTrace();
+        }
+    }
+
+    private final Runnable SDK_M_flashingRunnable = new Runnable() {
+        @Override
+        public void run() {
+            //休眠
+            try {
+                //打开闪光灯
+                turnOnFlashLight();
+                Thread.sleep(500);
+                //关闭闪关灯
+                turnOffFlashLight();
+            } catch (InterruptedException e) {
+//                e.printStackTrace();
+            }
+            handler.postDelayed(this, 1200);
+        }
+    };
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void stopFlashingSDK23() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        handler.removeCallbacks(SDK_M_flashingRunnable);
+        turnOffFlashLight();//关闭闪关灯
+        mCameraManager = null;
+        mCameraId = null;
+    }
+
+
+    //闪光灯闪烁
     private final Runnable flashingRunnable = new Runnable() {
         @Override
         public void run() {
@@ -381,57 +486,55 @@ public class CommuntServer extends Service implements IActvityCommunication {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            handler.postDelayed(flashingRunnable,1200);
+            handler.postDelayed(this, 1200);
         }
     };
+
     //开始闪光灯 run
     private void startFlashingRun() {
-        if (camera!=null){
+        if (camera != null && parameters != null) {
             try {
-                if (parameters==null){
-                    parameters = camera.getParameters();
-                }
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
                 camera.setParameters(parameters);
-//                camera.startPreview();
+                camera.startPreview();
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
     }
+
     //关闭闪光灯run
-    private void stopFlashingRun(){
-        if (camera!=null && parameters!=null){
-            try{
-//                camera.stopPreview();
+    private void stopFlashingRun() {
+        if (camera != null && parameters != null) {
+            try {
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                 camera.setParameters(parameters);
-//                camera.startPreview();
-            } catch(Exception ex){}
+                camera.startPreview();
+            } catch (Exception ex) {
+            }
         }
     }
 
     //关闭闪光灯
     private void stopFlashing() {
-        if (parameters!=null){
+        if (!getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
+            return;
+        stopFlashingSDK23();
+        stopFlashingSDK19();
+
+    }
+
+    private void stopFlashingSDK19() {
+        handler.removeCallbacks(flashingRunnable);
+        if (parameters != null) {
             //关闭闪光灯
             stopFlashingRun();
-            parameters=null;
+            parameters = null;
         }
-        if (camera!=null){
-            camera.stopPreview();
+        if (camera != null) {
             camera.release();
-            camera=null;
+            camera = null;
         }
-        handler.removeCallbacks(flashingRunnable);
     }
 
-    //打开电源灯
-    private void startPower() {
-    }
-
-    //关闭电源灯
-    private void stopPower() {
-
-    }
 }
