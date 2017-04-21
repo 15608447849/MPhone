@@ -12,7 +12,7 @@ public class ServerNotPermissionActivity extends Activity {
 
     private Handler handler ;
     private TextView tv ;
-    int time = 5;
+    int time = 10;
     private final Runnable runing = new Runnable() {
         @Override
         public void run() {
@@ -27,6 +27,7 @@ public class ServerNotPermissionActivity extends Activity {
             }
         }
     };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

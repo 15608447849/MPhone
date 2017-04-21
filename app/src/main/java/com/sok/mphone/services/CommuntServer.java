@@ -23,12 +23,14 @@ import android.support.v4.app.ActivityCompat;
 
 import com.sok.mphone.activity.BaseActivity;
 import com.sok.mphone.activity.BaseBroad;
+import com.sok.mphone.activity.PermissionActivity;
 import com.sok.mphone.entity.SocketBeads;
 import com.sok.mphone.entity.SysInfo;
 import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
 import com.sok.mphone.threads.interfaceImp.CommunicationThread;
 import com.sok.mphone.tools.CommunicationProtocol;
 import com.sok.mphone.tools.log;
+import com.wos.play.rootdir.model_monitor.soexcute.WatchServerHelp;
 
 import static com.sok.mphone.R.raw.a;
 
@@ -38,8 +40,6 @@ import static com.sok.mphone.R.raw.a;
 
 public class CommuntServer extends Service implements IActvityCommunication {
     private static String TAG = "CommuntServer";
-
-
     private SocketBeads socBen;
     private CommunicationThread communicationThread;
 
@@ -59,35 +59,62 @@ public class CommuntServer extends Service implements IActvityCommunication {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 //        log.e(TAG, "----------------------------------------onStartCommand() intent -getAction = "+ intent.getAction()+" -getFlags = " +intent.getFlags()+" flags =" + flags +" startId = "+startId);
-        try {
-            //如果 可以配置
-            if (SysInfo.get(true).isConfig()) {
 
-                if (SysInfo.get().isAccess()) {
-                    if (SysInfo.get().isConnected() && communicationThread != null && communicationThread.isAlive()) {
-                        log.i(TAG, "  通讯 线程 正在 执行中 ... ");
-                    } else {
-                        int port = Integer.parseInt(SysInfo.get().getServerPort());
-                        if (socBen == null) {
-                            socBen = new SocketBeads();
+        log.i("CLibs", "颖网终端呼叫机 后台通讯服务 -  onStartCommand >>> "+startId);
+        try {
+            //如果6.0以上的系统 - 先检查权限
+            if (Integer.parseInt(Build.VERSION.SDK) >= 21 &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                //通知activity 系统权限不足 - 无法连接
+                sendMessageToActivity(CONNECT_FAILT);//连接失败
+                startActivity(new Intent(this, PermissionActivity.class));
+                return START_NOT_STICKY;
+            }
+
+            boolean ifg = SysInfo.get(true).isConfig();
+            log.i(TAG, "[本地是否配置信息 = "+ ifg +"]");
+            //如果 可以配置
+            if (ifg) {
+                ifg = SysInfo.get(true).isLocalConnect();
+                log.i(TAG, "[本地是否授权连接 = "+ ifg +"] "+SysInfo.get().getLocalConnect());
+                if (ifg){
+                    ifg  = SysInfo.get(true).isAccess();
+                    log.i(TAG, "[服务器是否允许接入连接 = "+ ifg +"]");
+                    if (ifg) {
+                        if (SysInfo.get().isConnected() && communicationThread != null && communicationThread.isAlive()) {
+                            log.i(TAG, "[######### 通讯socket线程正在执行中 ########]");
+                        } else {
+                            if (socBen == null) {
+                                socBen = new SocketBeads();
+                            }
+                            socBen.setIp(SysInfo.get().getServerIp());
+                            socBen.setPort(Integer.parseInt(SysInfo.get().getServerPort()));
+                            startCommThread();
+                            WatchServerHelp.openDeams(getApplication());
                         }
-                        socBen.setIp(SysInfo.get().getServerIp());
-                        socBen.setPort(port);
-                        startCommThread();
+                    } else {
+                        log.i(TAG, "无权访问服务器,请申请授权");
+                        //通知activity 无访问服务器权限
+                        sendActivityMessage(CONNECT_IS_NOT_ACCESS);
                     }
-                } else {
-                    log.i(TAG, "无权访问服务器,请申请授权");
+                }else{
+                    //关闭监听
+                    WatchServerHelp.closeDeams(getApplication());
                 }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return START_STICKY;//super.onStartCommand(intent, flags, startId);
+        return START_NOT_STICKY;//super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        SysInfo.get(true);
         unregistBroad();
         stopCommThread();
         stopEffect();
@@ -96,11 +123,12 @@ public class CommuntServer extends Service implements IActvityCommunication {
         log.e(TAG, "----------------------------------------onDestroy()");
     }
 
+    //设置了 是否有权限 - true>>设置没有链接后台的权限
     private void setSysyinif(boolean isFlag) {
-
         if (isFlag) {
             SysInfo.get().setConnectPower(SysInfo.COMUNICATE_POWER.COMMUNI_NO_ACCESS); //无连接权限
         }
+        SysInfo.get().setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE); //无连接权限
         //SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE);//无消息
         SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_FAILT);//无可连接
         SysInfo.get().setCallState(SysInfo.CALL_STATE.CALL_NOT_TASK);//不存在呼叫任务
@@ -245,7 +273,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
             }
             if (command.equalsIgnoreCase(CommunicationProtocol.CMD_FREE)) { //未被呼叫 - 空闲中 - 三个按钮全部不显示
                 //设置通讯状态
-                SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE); //没有消息发来
+                SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE,true); //没有消息发来
                 SysInfo.get().setCallState(SysInfo.CALL_STATE.CALL_NOT_TASK, true);//不存在呼叫任务
                 stopEffect();
                 sendActivityMessage(CONNECT_ING_FREE);
@@ -407,7 +435,7 @@ public class CommuntServer extends Service implements IActvityCommunication {
             mCameraId = mCameraManager.getCameraIdList()[0];
             if (mCameraManager != null && mCameraId != null) {
                 int flag = mCameraManager.getCameraCharacteristics(mCameraId).get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
-//                log.e(TAG,"是不是支持:"+flag);
+                log.e(TAG,"是不是支持:"+flag);
                 if (flag == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY) {
                     //调用旧版本
                     throw new IllegalStateException("plase laegacy camera api");

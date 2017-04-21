@@ -1,9 +1,14 @@
 package com.sok.mphone.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -100,6 +105,29 @@ public class LoginFragments extends Fragment {
     @OnClick(R.id.login_button)
     public void onClick(View view) {
        // mActivity.showTolas("连接服务器" +(SysInfo.get(true).isConnected()?"成功":"失败,请检查网络或ip是否正确"));
+        if (mActivity==null) return;
+        if (!AppsTools.isOpenNetwork(mActivity)){
+            mActivity.showTolas("网络连接不可用");
+            //进入网络设置
+            if(android.os.Build.VERSION.SDK_INT > 10 ){
+                //3.0以上打开设置界面，也可以直接用ACTION_WIRELESS_SETTINGS打开到wifi界面
+                startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+            } else {
+                startActivity(new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS));
+            }
+            return;
+        }
+
+        //如果6.0 - 23 以上
+        if (Integer.parseInt(Build.VERSION.SDK)>=23){
+            if ( ContextCompat.checkSelfPermission(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                  || ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    ){
+                mActivity.showTolas("无法读取写入文件,请设置应用权限.");
+                return;
+            }
+        }
+
         //输出的ip 地址 和保存的 ip地址 不同 -> 也需要连接
         if (!SysInfo.get(true).isConnected()) { //未连接 连接失败等
             String ip = login_server_ip.getText().toString().trim();
@@ -110,6 +138,7 @@ public class LoginFragments extends Fragment {
                 SysInfo.get().setServerPort(port);
                 SysInfo.get().setAppMac(AppsTools.getMacAddress(mActivity));
                 SysInfo.get().setConnectPower(SysInfo.COMUNICATE_POWER.COMMUNI_ACCESS);//设置有权限
+                SysInfo.get().setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_ENABLE);//本地允许
                 SysInfo.get().writeInfo();
                 mActivity.startCommunication();
             }
@@ -143,5 +172,9 @@ public class LoginFragments extends Fragment {
     }
 
 
-
+    public void setConnectFailt() {
+        if (login_state!=null){
+            login_state.setText(mActivity.getString(R.string.login_state_connect_failt));
+        }
+    }
 }

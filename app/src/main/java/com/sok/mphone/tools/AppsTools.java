@@ -1,6 +1,8 @@
 package com.sok.mphone.tools;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -243,4 +245,37 @@ public class AppsTools {
                 Build.USER.length()%10 ;
         return m_szDevIDShort;
     }
+
+
+    /**
+     * 对网络连接状态进行判断
+     * @return  true, 可用； false， 不可用
+     */
+    public static boolean isOpenNetwork(Context context) {
+        ConnectivityManager connManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connManager.getActiveNetworkInfo();
+        if(networkInfo!= null) {
+            return networkInfo.isAvailable();
+        }
+        return false;
+    }
+
+    //2.获取当前网络连接的类型信息
+    public static int getNetworkType(Context context) {
+        ConnectivityManager connManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connManager.getActiveNetworkInfo();
+        if(networkInfo!= null && networkInfo.isAvailable()) {
+            int networkType = networkInfo.getType();
+            return networkType;
+//            if(ConnectivityManager.TYPE_WIFI == networkType){
+//                //当前为wifi网络
+//
+//            }else if(ConnectivityManager.TYPE_MOBILE == networkType){
+//                //当前为mobile网络
+//
+//            }
+        }
+        return -1;
+    }
+
 }

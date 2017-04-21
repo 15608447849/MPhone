@@ -110,8 +110,9 @@ public class ShowFragments extends Fragment {
             setMessageSendSuccess(1);
         }
         if (id == R.id.show_button_exit) { //结束通讯服务
-            mActivity.showTolas("即将断开连接服务");
+            //设置不连接标识
             mActivity.stopCommunication();
+            mActivity.showTolas("已断开连接服务:"+SysInfo.get(true).isLocalConnect()+" - " +SysInfo.get().getLocalConnect());
         }
         mActivity.finish();
     }
@@ -154,7 +155,6 @@ public class ShowFragments extends Fragment {
             //没消息 - 按钮不可点击
             setButtonClick(0, false);
         }
-
     }
 
     //显示按钮

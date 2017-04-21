@@ -222,12 +222,16 @@ public class BaseActivity extends Activity {
             if (showPage != null) {//现在是显示状态
                 showPage.setConnectFailt();
             }
+            if (loginPage!=null){
+                loginPage.setConnectFailt();
+            }
         }
         if (type == IActvityCommunication.CONNECT_IS_NOT_ACCESS) {
             // 无权访问
             log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 无权访问服务器");
 //            showTolas("无访问权限,请联系客服");
             stopCommunication();
+            //设置没有权限访问服务器(在server中设置)
             startActivity(new Intent(this,ServerNotPermissionActivity.class));
             //弹出提示窗口
             this.finish();

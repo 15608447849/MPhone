@@ -1,6 +1,7 @@
 package com.sok.mphone.entity;
 
 import com.sok.mphone.tools.AppsTools;
+import com.sok.mphone.tools.log;
 
 import cn.trinea.android.common.util.FileUtils;
 
@@ -12,7 +13,6 @@ import cn.trinea.android.common.util.FileUtils;
 public class SysInfo {
 
 
-
     interface KEYS {
         String SERVER_IP = "SERVER_IP";
         String SERVER_PORT = "SERVER_PORT";
@@ -21,8 +21,8 @@ public class SysInfo {
         String COMMUNICATION_STATE = "COMMUNICATION_STATE";
         String CONNECT_POWER = "CONNECT_POWER";
         String CALL_STATE = "CALL_STATE";
+        String LOCAL_CONNECT = "LOCAL_CONNECT";
     }
-
     public interface CONN_STATES {
         String CONN_SUCCESS = "success";
         String CONN_FAILT = "failt";
@@ -35,15 +35,16 @@ public class SysInfo {
         String CALL_EXIST_TASK = "KONGXIAN";//空闲的
         String CALL_NOT_TASK = "FANMAN";//正在服务中的
     }
-
-
     public interface COMUNICATE_POWER{
         String COMMUNI_NO_ACCESS = "WU_QUAN_XIAN";//无权限
         String COMMUNI_ACCESS = "you_quan_xian";//有权限
     }
+    public interface LOCAL_CONNECT{
+        String LOCAL_CONNECT_ENABLE="ENABLE"; //本地允许链接服务器
+        String LOCAL_CONNECT_UNENABLE="SERVER_NOENABLE";//本地不连接服务器
+    }
 
-
-    private static final String infos = "/mnt/sdcard/wosapp.conf";
+    private static final String infos = "/mnt/sdcard/mphone.conf";
 
     private String serverIp;
     private String serverPort;
@@ -54,6 +55,7 @@ public class SysInfo {
     private String callState = CALL_STATE.CALL_EXIST_TASK;
     private String connectPower = COMUNICATE_POWER.COMMUNI_ACCESS;
 
+    private String localConnect = LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE;//默认不允许
 
 
     //构造
@@ -72,6 +74,22 @@ public class SysInfo {
     public static SysInfo get(boolean isSync) {
         if (isSync) get().readInfo();
         return get();
+    }
+
+
+    public String getLocalConnect() {
+        return localConnect;
+    }
+
+    public void setLocalConnect(String localConnect) {
+        if (localConnect.equals(LOCAL_CONNECT.LOCAL_CONNECT_ENABLE) || localConnect.equals(LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE)){
+            this.localConnect = localConnect;
+        }
+    }
+
+    public void setLocalConnect(String localConnect,boolean flag) {
+        setLocalConnect(localConnect);
+        if (flag) writeInfo();
     }
 
 
@@ -123,6 +141,10 @@ public class SysInfo {
     //是否可以连接服务器
     public boolean isConnected(){
         return connectState.equals(CONN_STATES.CONN_SUCCESS);
+    }
+
+    public boolean isLocalConnect() {
+        return localConnect.equals(LOCAL_CONNECT.LOCAL_CONNECT_ENABLE);
     }
 
     public String getCommunicationState() {
@@ -187,10 +209,9 @@ public class SysInfo {
     private synchronized void readInfo() {
         try {
             if (FileUtils.isFileExist(infos)) {
-                StringBuilder content = FileUtils.readFile(infos, "UTF-8");//
+                StringBuilder content = FileUtils.readFile(infos, "UTF-8");
                 String var;
                 if (content != null && !"".equals(var = content.toString())) {
-
                     var = AppsTools.justResultIsBase64decode(var);
                     contentEntity.setMap(AppsTools.jsonTxtToMap(var));
                     readValue();
@@ -207,8 +228,13 @@ public class SysInfo {
             writeValue();
             String content = AppsTools.mapToJson(contentEntity.getMap());//map->文本
             content = AppsTools.justResultIsBase64encode(content);//加密
-            FileUtils.writeFile(infos, content);//写入数据
-            isConfig = true;
+            boolean flag = FileUtils.writeFile(infos, content);//写入数据
+
+            if (flag){
+                log.e("系统配置","写入成功");
+                isConfig = true;
+            }
+
         } catch (Exception e) {
             isConfig = false;
             //删除文件
@@ -216,8 +242,6 @@ public class SysInfo {
             e.printStackTrace();
         }
     }
-
-
 
     //初始化数据- 赋值
     private void readValue() {
@@ -229,6 +253,7 @@ public class SysInfo {
             this.setCommunicationState(contentEntity.GetStringDefualt(KEYS.COMMUNICATION_STATE));
             this.setConnectPower(contentEntity.GetStringDefualt(KEYS.CONNECT_POWER));
             this.setCallState(contentEntity.GetStringDefualt(KEYS.CALL_STATE));
+            this.setLocalConnect(contentEntity.GetStringDefualt(KEYS.LOCAL_CONNECT));
             this.isConfig = true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -247,11 +272,10 @@ public class SysInfo {
             contentEntity.put(KEYS.COMMUNICATION_STATE, AppsTools.justIsEnptyToString(getCommunicationState()));
             contentEntity.put(KEYS.CONNECT_POWER, AppsTools.justIsEnptyToString(getConnectPower()));
             contentEntity.put(KEYS.CALL_STATE, AppsTools.justIsEnptyToString(getCallState()));
+            contentEntity.put(KEYS.LOCAL_CONNECT, AppsTools.justIsEnptyToString(getLocalConnect()));
         } catch (NullPointerException e) {
             e.printStackTrace();
             FileUtils.deleteFile(infos);
         }
     }
-
-
 }
