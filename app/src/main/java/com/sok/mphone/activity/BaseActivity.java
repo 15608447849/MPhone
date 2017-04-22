@@ -128,15 +128,18 @@ public class BaseActivity extends Activity {
 
     //选择页面
     private void swithPage() {
-        log.i(TAG," swithPage() ");
-        //如果 已经 --> 1配置 并且 2可连接状态 3.有权限访问
-        if (SysInfo.get(true).isConfig() && SysInfo.get().isConnected() && SysInfo.get().isAccess()) {  // 已配置 并且 可连接  - > 显示 show页面 ,关闭 login页面 ->
+        boolean flag =SysInfo.get(SysInfo.COMUNICATION).isConnected();
+        log.i(TAG," swithPage() 当前连接状态:"+flag);
+        //如果 已经 --> 1配置 2本地允许接入 3正在链接中 4.有权限访问
+        if (SysInfo.get(SysInfo.CONFIG).isConfig() &&
+                SysInfo.get(SysInfo.CONFIG).isLocalConnect() &&
+                flag //&& SysInfo.get(SysInfo.COMUNICATION).isAccess()
+               ) {// 已配置 并且 可连接  - > 显示 show页面 ,关闭 login页面 ->
             log.i(TAG,"  show page - -");
             if (showPage == null) {
                 showPage = (ShowFragments) IFragmentsFactory.getInstans(IFragmentsFactory.Type.show_page);
             }
             IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_3, showPage);
-            startCommunication();
         } else {
             log.i(TAG,"  login page - -");
             if (loginPage == null) {
@@ -144,6 +147,7 @@ public class BaseActivity extends Activity {
             }
             IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_2, loginPage);
         }
+        startCommunication();//再次尝试打开服务
     }
 
 

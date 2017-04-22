@@ -87,13 +87,13 @@ public class LoginFragments extends Fragment {
 
 
     private void initData() {
-        String ip = SysInfo.get().getServerIp();
-        String port = SysInfo.get().getServerPort();
+        String ip = SysInfo.get(SysInfo.CONFIG).getServerIp();
+        String port = SysInfo.get(SysInfo.CONFIG).getServerPort();
         if (!"".equals(ip))
                 login_server_ip.setText(ip);
         if (!"".equals(port))
                 login_server_port.setText(port);
-        if (SysInfo.get().isConnected()) {
+        if (SysInfo.get(SysInfo.COMUNICATION).isConnected()) {
             mActivity.startCommunication();
             login_state.setText(mActivity.getString(R.string.login_state_connect_ing));//连接中
         } else {
@@ -128,19 +128,26 @@ public class LoginFragments extends Fragment {
             }
         }
 
+        //                SysInfo.get().setConnectPower(SysInfo.COMUNICATE_POWER.COMMUNI_ACCESS);//设置有权限
         //输出的ip 地址 和保存的 ip地址 不同 -> 也需要连接
-        if (!SysInfo.get(true).isConnected()) { //未连接 连接失败等
+        if (!SysInfo.get(SysInfo.COMUNICATION).isConnected()) { //判断不在连接中
             String ip = login_server_ip.getText().toString().trim();
             String port = login_server_port.getText().toString().trim();
             if (!"".equals(ip) && !"".equals(port)) {
                 login_state.setText(mActivity.getString(R.string.login_state_connect_ing));//连接中
-                SysInfo.get().setServerIp(ip);
-                SysInfo.get().setServerPort(port);
-                SysInfo.get().setAppMac(AppsTools.getMacAddress(mActivity));
-                SysInfo.get().setConnectPower(SysInfo.COMUNICATE_POWER.COMMUNI_ACCESS);//设置有权限
-                SysInfo.get().setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_ENABLE);//本地允许
-                SysInfo.get().writeInfo();
-                mActivity.startCommunication();
+                SysInfo sifo = SysInfo.get(SysInfo.CONFIG);
+                sifo.setServerIp(ip);
+                sifo.setServerPort(port);
+                sifo.setAppMac(AppsTools.getMacAddress(mActivity));//获取mac地址
+                sifo.setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_ENABLE);//本地允许
+                sifo.setConfigInfo(SysInfo.IFCONFIG.CONFIG_SUCCESS);
+                //写入文件
+                if (sifo.writeInfo(SysInfo.CONFIG)){
+                    mActivity.startCommunication();//打开后台通讯进程
+                }else{
+                    mActivity.showTolas("写入配置信息失败");
+                    login_state.setText(mActivity.getString(R.string.login_state_connect_failt));//连接失败
+                }
             }
         }
     }

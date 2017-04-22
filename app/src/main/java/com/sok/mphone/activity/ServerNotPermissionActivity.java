@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import android.widget.TextView;
 
 import com.sok.mphone.R;
+import com.sok.mphone.tools.AppsTools;
 
 public class ServerNotPermissionActivity extends Activity {
 
@@ -18,7 +19,7 @@ public class ServerNotPermissionActivity extends Activity {
         public void run() {
             if (tv!=null && handler!=null){
                 if (time > 0){
-                    tv.setText("无权限连接服务器,请联系客服. ("+time+")\n[长按'连接服务器'查看设备标识码,添加至后台]");
+                    tv.setText("无权限连接服务器,请联系客服. ("+time+")\n["+ AppsTools.getMacAddress(ServerNotPermissionActivity.this)+"]");
                     time--;
                     handler.postDelayed(this,1000);
                 }else{

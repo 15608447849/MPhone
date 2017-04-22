@@ -59,7 +59,6 @@ public class CommuntServer extends Service implements IActvityCommunication {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 //        log.e(TAG, "----------------------------------------onStartCommand() intent -getAction = "+ intent.getAction()+" -getFlags = " +intent.getFlags()+" flags =" + flags +" startId = "+startId);
-
         log.i("CLibs", "颖网终端呼叫机 后台通讯服务 -  onStartCommand >>> "+startId);
         try {
             //如果6.0以上的系统 - 先检查权限
@@ -73,37 +72,28 @@ public class CommuntServer extends Service implements IActvityCommunication {
                 return START_NOT_STICKY;
             }
 
-            boolean ifg = SysInfo.get(true).isConfig();
+            boolean ifg = SysInfo.get(SysInfo.CONFIG).isConfig();
             log.i(TAG, "[本地是否配置信息 = "+ ifg +"]");
+            boolean iflg = SysInfo.get(SysInfo.CONFIG).isLocalConnect();
+            log.i(TAG, "[本地是否授权连接 = "+ iflg +"] ");
             //如果 可以配置
-            if (ifg) {
-                ifg = SysInfo.get(true).isLocalConnect();
-                log.i(TAG, "[本地是否授权连接 = "+ ifg +"] "+SysInfo.get().getLocalConnect());
-                if (ifg){
-                    ifg  = SysInfo.get(true).isAccess();
-                    log.i(TAG, "[服务器是否允许接入连接 = "+ ifg +"]");
-                    if (ifg) {
-                        if (SysInfo.get().isConnected() && communicationThread != null && communicationThread.isAlive()) {
+            if (ifg && iflg) {
+                        if (SysInfo.get(SysInfo.COMUNICATION).isConnected() && communicationThread != null && communicationThread.isAlive()) {
                             log.i(TAG, "[######### 通讯socket线程正在执行中 ########]");
                         } else {
                             if (socBen == null) {
                                 socBen = new SocketBeads();
                             }
-                            socBen.setIp(SysInfo.get().getServerIp());
-                            socBen.setPort(Integer.parseInt(SysInfo.get().getServerPort()));
+                            socBen.setIp(SysInfo.get(SysInfo.CONFIG).getServerIp());
+                            socBen.setPort(Integer.parseInt(SysInfo.get(SysInfo.CONFIG).getServerPort()));
                             startCommThread();
                             WatchServerHelp.openDeams(getApplication());
                         }
-                    } else {
-                        log.i(TAG, "无权访问服务器,请申请授权");
-                        //通知activity 无访问服务器权限
-                        sendActivityMessage(CONNECT_IS_NOT_ACCESS);
-                    }
-                }else{
-                    //关闭监听
-                    WatchServerHelp.closeDeams(getApplication());
-                }
-
+            }else{
+                //关闭监听
+                WatchServerHelp.closeDeams(getApplication());
+                //结束自己
+                stopSelf();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -114,33 +104,25 @@ public class CommuntServer extends Service implements IActvityCommunication {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        SysInfo.get(true);
-        unregistBroad();
-        stopCommThread();
-        stopEffect();
+        unregistBroad();//注销广播
+        stopCommThread();//结束通讯
+        stopEffect();//停止
         //设置状态
-        setSysyinif(false);
+        setCommuncationFailt();
         log.e(TAG, "----------------------------------------onDestroy()");
     }
 
-    //设置了 是否有权限 - true>>设置没有链接后台的权限
-    private void setSysyinif(boolean isFlag) {
-        if (isFlag) {
-            SysInfo.get().setConnectPower(SysInfo.COMUNICATE_POWER.COMMUNI_NO_ACCESS); //无连接权限
-        }
-        SysInfo.get().setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE); //无连接权限
-        //SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE);//无消息
-        SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_FAILT);//无可连接
-        SysInfo.get().setCallState(SysInfo.CALL_STATE.CALL_NOT_TASK);//不存在呼叫任务
-        SysInfo.get().writeInfo();
+    //设置了 是否有权限 - true >> 设置没有连接后台的权限
+    private void setCommuncationFailt() {
+        SysInfo.get(SysInfo.COMUNICATION).setConnectState(SysInfo.CONN_STATES.CONN_FAILT,true);//未连接
     }
 
     //接受 应用-activity - showpage - 发来的消息
     public void receiveAppMsg(String message) {
         if (message != null && !"".equals(message) && communicationThread != null) {
             if (message.contains(CommunicationProtocol.ANTY)) {
-                communicationThread.sendMessageToThread(message + "-" + SysInfo.get().getAppMac());//发送消息给服务器
-                SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE, true);//已处理 呼叫的信息
+                communicationThread.sendMessageToThread(message + "-" + SysInfo.get(SysInfo.CONFIG).getAppMac());//发送消息给服务器  :  xxxx-mac地址
+                SysInfo.get(SysInfo.COMUNICATION).setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE, true);//已处理 呼叫的信息
                 stopEffect();
                 //取消延时任务
                 handler.removeCallbacks(runFunc2);
@@ -204,22 +186,23 @@ public class CommuntServer extends Service implements IActvityCommunication {
         }
     }
 
-
+    //接受到服务器的消息 - 后台处理 - 到activity中
     @Override
     public void sendMessageToActivity(int type) {
         if (type == IActvityCommunication.CONNECT_SUCCEND) {
-            SysInfo.get().setConnectState(SysInfo.CONN_STATES.CONN_SUCCESS, true);
+            SysInfo.get(SysInfo.COMUNICATION).setConnectState(SysInfo.CONN_STATES.CONN_SUCCESS, true); //设置连接成功
 //            SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE, true);
-            communicationThread.sendMessageToThread(CommunicationProtocol.AHOL + SysInfo.get(true).getAppMac() + (SysInfo.get().isHasMessage() ? "-" + CommunicationProtocol.Receive_Calls_With_Out_The_Click_Of_A_Button : ""));
+            communicationThread.sendMessageToThread(CommunicationProtocol.AHOL + SysInfo.get(SysInfo.CONFIG).getAppMac()
+                    + (SysInfo.get(SysInfo.COMUNICATION).isHasMessage() ? "-" + CommunicationProtocol.Receive_Calls_With_Out_The_Click_Of_A_Button : ""));
             sendActivityMessage(type);//发送消息 到 activity - 连接成功
         }
         if (type == IActvityCommunication.CONNECT_ING) {
             //发送 mac 地址 ...
-            communicationThread.sendMessageToThread(CommunicationProtocol.AHBT + SysInfo.get().getAppMac());
+            communicationThread.sendMessageToThread(CommunicationProtocol.AHBT + SysInfo.get(SysInfo.CONFIG).getAppMac());
         }
         if (type == IActvityCommunication.CONNECT_NO_ING || type == IActvityCommunication.CONNECT_FAILT) {
-            // 连接失败
-            setSysyinif(false);
+            // 未连接 或者 连接失败
+            setCommuncationFailt();
 //            SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE, true);//无消息状态
             //取消延时任务
             handler.removeCallbacks(runFunc2);
@@ -254,36 +237,50 @@ public class CommuntServer extends Service implements IActvityCommunication {
 
         if (cmd.equals(CommunicationProtocol.SNTY)) {
             if (command.equalsIgnoreCase(CommunicationProtocol.CMD_NOT_ACCESS)) {
-                //断开连接 - 无权限链接- 提示
+                //1断开连接 - 2 设置无权限链接 - 3.提示
                 stopCommThread();
-                setSysyinif(true);
+                setCommuncationFailt();
+                SysInfo.get(SysInfo.COMUNICATION).setConnectPower(SysInfo.COMUNICATE_POWER.COMMUNI_NO_ACCESS,true); //无连接权限
                 sendActivityMessage(CONNECT_IS_NOT_ACCESS);
             }
-            if (command.equalsIgnoreCase(CommunicationProtocol.CMD_CALL_ING)) { // 呼叫中 -<接受服务> - <拒绝服务>
-
+            if (command.equalsIgnoreCase(CommunicationProtocol.CMD_CALL_ING)) { // 呼叫中 - 选择 : 1<接受服务> - 2<拒绝服务>
                 //设置通讯状态
-                SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_CALL, true); //有一个消息发来 - 并且 有存在任务
-                SysInfo.get().setCallState(SysInfo.CALL_STATE.CALL_EXIST_TASK, true);//存在呼叫任务
-                handler.post(runFunc1);
-                handler.postDelayed(runFunc2, 30 * 1000);// 30秒后无回应 发送-拒绝
+                boolean  f = setCommunicationMessage(true);
+                if (f){ //写入成功
+                    handler.post(runFunc1);
+                    handler.postDelayed(runFunc2, 30 * 1000);// 设置 30秒后无回应 发送-拒绝
+                }
             }
             if (command.equalsIgnoreCase(CommunicationProtocol.CMD_NOT_FREE)) { //已经被呼叫 - 繁忙 ,并且 本地状态是呼叫中 -> 显示 <结束服务>
-                SysInfo.get().setCallState(SysInfo.CALL_STATE.CALL_EXIST_TASK, true);//存在呼叫任务
-                sendActivityMessage(CONNECT_ING_NOTFREE);
+                SysInfo.get(SysInfo.COMUNICATION).setCallState(SysInfo.CALL_STATE.CALL_EXIST_TASK, true);//存在任务待执行
+                sendActivityMessage(CONNECT_ING_NOTFREE);//告知activity ,有任务进行中~ 繁忙
             }
             if (command.equalsIgnoreCase(CommunicationProtocol.CMD_FREE)) { //未被呼叫 - 空闲中 - 三个按钮全部不显示
                 //设置通讯状态
-                SysInfo.get().setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE,true); //没有消息发来
-                SysInfo.get().setCallState(SysInfo.CALL_STATE.CALL_NOT_TASK, true);//不存在呼叫任务
-                stopEffect();
-                sendActivityMessage(CONNECT_ING_FREE);
+                boolean  f = setCommunicationMessage(false);
+                if (f){
+                    stopEffect();
+                    sendActivityMessage(CONNECT_ING_FREE);
+                }
             }
-
-
         }
     }
 
+    //设置通讯状态
+    private boolean setCommunicationMessage(boolean flag){
+        SysInfo sysInfo = SysInfo.get(SysInfo.COMUNICATION);
+        if (flag){
+            sysInfo.setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_CALL); //有一个消息发来
+            sysInfo.setCallState(SysInfo.CALL_STATE.CALL_EXIST_TASK);//存在任务
+        }else{
+            sysInfo.setCommunicationState(SysInfo.COMUNICATE_STATES.COMMUNI_NO_MESSAGE); //没有消息发来
+            sysInfo.setCallState(SysInfo.CALL_STATE.CALL_NOT_TASK);//不存在呼叫任务
+        }
+       return sysInfo.writeInfo(SysInfo.COMUNICATION);
+    }
+
     private Handler handler = new Handler();
+    //打开activity 开始响铃震动
     private final Runnable runFunc1 = new
             Runnable() {
                 @Override

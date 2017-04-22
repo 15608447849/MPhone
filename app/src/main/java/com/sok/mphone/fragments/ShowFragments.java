@@ -84,7 +84,7 @@ public class ShowFragments extends Fragment {
 
     @OnClick({R.id.show_button_sure, R.id.show_button_refuse, R.id.show_button_over, R.id.show_button_exit})
     public void onClick(View view) {
-        if (SysInfo.get(true).isConnected()) { //连接成功的
+        if (SysInfo.get(SysInfo.COMUNICATION).isConnected()) { //正在链接中的
             swiBtn(view.getId());
         } else {
             setConnectFailt();
@@ -110,9 +110,22 @@ public class ShowFragments extends Fragment {
             setMessageSendSuccess(1);
         }
         if (id == R.id.show_button_exit) { //结束通讯服务
+            //如果正在呼叫中 并且 处于空闲
+            if (SysInfo.get(SysInfo.COMUNICATION).isHasMessage() &&
+                    SysInfo.get(SysInfo.COMUNICATION).isMessageTask()) {
+                //发送拒绝请求
+                mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_REFUSE_SERVER);
+                setMessageSendSuccess(0);
+            }
+
             //设置不连接标识
-            mActivity.stopCommunication();
-            mActivity.showTolas("已断开连接服务:"+SysInfo.get(true).isLocalConnect()+" - " +SysInfo.get().getLocalConnect());
+            SysInfo sifo = SysInfo.get(SysInfo.CONFIG);
+            sifo.setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE);
+            //写入文件
+            if (sifo.writeInfo(SysInfo.CONFIG)){
+                mActivity.showTolas("已断开连接服务:"+SysInfo.get(SysInfo.CONFIG).isLocalConnect());
+                mActivity.startCommunication();
+            }
         }
         mActivity.finish();
     }
@@ -144,9 +157,9 @@ public class ShowFragments extends Fragment {
 
 
     public void initState() {
-
         //存在 呼叫任务 并且 有消息发来
-        if (SysInfo.get(true).isHasMessage() && SysInfo.get(true).isMessageTask()) {
+        if (SysInfo.get(SysInfo.COMUNICATION).isHasMessage() &&
+                SysInfo.get(SysInfo.COMUNICATION).isMessageTask()) {
             //有消息 - 按钮显示 - 可点击
             setShowButton(0);
             setButtonClick(0, true);
@@ -200,8 +213,9 @@ public class ShowFragments extends Fragment {
     }
 
     public void showOverButton(){
-        //存在呼叫任务 并且 没有消息发来
-        if (!SysInfo.get(true).isHasMessage() && SysInfo.get().isMessageTask()){
+        //存在呼叫任务 并且 没有 消息发来
+        if (!SysInfo.get(SysInfo.COMUNICATION).isHasMessage() &&
+                SysInfo.get(SysInfo.COMUNICATION).isMessageTask()){
             setShowButton(1);
             setButtonClick(1,true);
         }
