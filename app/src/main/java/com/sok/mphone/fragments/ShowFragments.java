@@ -123,7 +123,7 @@ public class ShowFragments extends Fragment {
             sifo.setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE);
             //写入文件
             if (sifo.writeInfo(SysInfo.CONFIG)){
-                mActivity.showTolas("已断开连接服务:"+SysInfo.get(SysInfo.CONFIG).isLocalConnect());
+                mActivity.showTolas("已断开连接服务");//+SysInfo.get(SysInfo.CONFIG).isLocalConnect()
                 mActivity.startCommunication();
             }
         }

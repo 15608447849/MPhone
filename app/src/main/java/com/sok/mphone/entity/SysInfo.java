@@ -227,7 +227,7 @@ public class SysInfo {
                 String var;
                 if (content != null && !"".equals(var = content.toString())) {
                     var = AppsTools.justResultIsBase64decode(var);
-                    Log.e(TAG,"读取内容:\n"+var);
+                    //Log.e(TAG,"读取内容:\n"+var);
                     readValue(type,AppsTools.jsonTxtToMap(var));
                 }
             }

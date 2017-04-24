@@ -1,9 +1,11 @@
 package com.wos.play.rootdir.model_monitor.soexcute;
 
-import android.app.IntentService;
+import android.app.Notification;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Environment;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -11,11 +13,8 @@ import android.util.Log;
  * Created by 79306 on 2017/3/8.
  */
 
-public class WatchServerHelp extends IntentService{
+public class WatchServerHelp extends Service {
     private static final String TAG = "CLibs";
-    public WatchServerHelp() {
-        super(TAG);
-    }
     public static final String DEAMS_KEY = "keys";
     public static final int OPEN_DEAMS = 666;
     public static final int CLOSE_DEAMS = 777;
@@ -23,7 +22,13 @@ public class WatchServerHelp extends IntentService{
     public static final int RESET_DEAMS = 999;
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
+    public void onCreate() {
+        super.onCreate();
+        Notification notification = new Notification();
+        startForeground(1, notification);
+    }
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
             int type = intent.getIntExtra(DEAMS_KEY,-1);
             if (type == OPEN_DEAMS){
                 open();
@@ -37,6 +42,13 @@ public class WatchServerHelp extends IntentService{
             if (type == RESET_DEAMS){
                 openAll();
             }
+        return START_NOT_STICKY;
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     private void open() {
