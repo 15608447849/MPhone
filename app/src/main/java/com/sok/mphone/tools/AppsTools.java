@@ -162,7 +162,6 @@ public class AppsTools {
         return "02:00:00:00:00:00";
     }
 
-
     //本地以太网mac地址文件
     private static String getMacAddress()
     {
