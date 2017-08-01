@@ -2,11 +2,9 @@ package com.sok.mphone.entity;
 
 import com.sok.mphone.tools.log;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 /**
@@ -15,16 +13,16 @@ import java.net.Socket;
 
 public class SocketBeads {
     private static final String TAG = "_SOCKET";
-    private DataOutputStream dataOutputStream;
-    private DataInputStream dataInputStream;
+    private OutputStream dataOutputStream;
+    private InputStream dataInputStream;
 
     private Socket socket;
     private String ip;
     private int port;// 6666
     private boolean isConnected = false;
     private MessageBeads mStore;
-
-
+    private long cStateTime;
+    private int outtime = 60 * 1000;
 
     public SocketBeads(String ip, int port) {
         this();
@@ -59,8 +57,13 @@ public class SocketBeads {
                 log.i(TAG,"尝试创建socket 连接...");
                 socket = new Socket(ip, port);
                 socket.setOOBInline(true);
-                dataOutputStream = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-                dataInputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+                socket.setKeepAlive(true);//
+                socket.setSoTimeout(10*1000);
+                socket.setSoLinger(true,0);
+                socket.setTcpNoDelay(false);//立即发送
+                dataOutputStream = socket.getOutputStream();
+                dataInputStream = socket.getInputStream();
+                cStateTime = System.currentTimeMillis();
                 isConnected = true;
                 log.i(TAG,"Communication connectToServer success >>  \n" + ip + " - " + port);
             }
@@ -91,7 +94,6 @@ public class SocketBeads {
         if (dataOutputStream != null) {
             try {
                 dataOutputStream.close();
-
             } catch (Exception e) {
                 log.e(TAG,"Communication disconnect error : " + e.getMessage());
             } finally {
@@ -101,7 +103,6 @@ public class SocketBeads {
         if (dataInputStream != null) {
             try {
                 dataInputStream.close();
-
             } catch (IOException e) {
                 log.e(TAG,"Communication disconnect error : " + e.getMessage());
             } finally {
@@ -132,11 +133,15 @@ public class SocketBeads {
 
     public void sendMessage (String msg) throws Exception{
 
-        if (dataOutputStream!=null){
-            log.i(TAG," 发送给 服务器 [" + msg+"]");
-            dataOutputStream.writeUTF(msg);
-            dataOutputStream.flush();
+        if ( System.currentTimeMillis() - cStateTime > outtime) throw new Exception("socket connected timeout.");
+
+        if (dataOutputStream!=null && socket!=null && socket.isConnected() && !socket.isClosed() && !socket.isOutputShutdown()){
+            log.i(TAG," 发送给 服务器 [" + msg +"]");
+            // && socket!=null && socket.isConnected() && !socket.isClosed() && !socket.isOutputShutdown()
+            dataOutputStream.write(msg.getBytes());
+
         }
+
     }
     public void  sendMessage() throws Exception{
         String msg = getMessage();
@@ -146,14 +151,21 @@ public class SocketBeads {
     }
     public String acceptMessage()throws Exception {
         String msg = null;
-        if (dataInputStream!=null){
-
+        if (dataInputStream!= null && socket!=null && !socket.isInputShutdown()){
             if (dataInputStream.available() > 0) {
-                msg = dataInputStream.readUTF();
+                byte[] datas = new byte[dataInputStream.available()];
+                dataInputStream.read(datas);
+                msg = new String(datas);
+                log.i(TAG," 服务器 消息 [" + msg +"]");
+                //更新当前时间差
+                cStateTime = System.currentTimeMillis();
             }
         }
         return msg;
     }
 
 
+    public void setOuttime(int outtime) {
+        this.outtime = outtime*10;
+    }
 }

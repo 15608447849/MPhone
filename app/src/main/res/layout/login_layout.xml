@@ -82,15 +82,46 @@
             android:inputType="number"
             />
     </LinearLayout>
+    <!-- 工号 -->
+    <LinearLayout
+        android:layout_width="@dimen/x460"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/lg_layout_3"
+        android:layout_below="@+id/lg_layout_2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/y60"
+        >
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_color_2"
+            android:text="@string/server_job_number"
+            android:textSize="@dimen/x28"
+            android:singleLine="true"
+            android:layout_marginLeft="@dimen/x10"
+            />
+        <EditText
+            android:id="@+id/login_job_number"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/input_server_job_number"
+            android:textSize="@dimen/x28"
+            android:singleLine="true"
+            android:textColor="@color/text_color_2"
+            android:background="@android:color/transparent"
+            android:inputType="number"
+            />
+    </LinearLayout>
     <!-- 连接按钮 -->
-
-
     <Button
         style="@style/show_page_button_style"
         android:id="@+id/login_button"
         android:text="@string/login_button"
         android:background="@drawable/button_green"
-        android:layout_below="@+id/lg_layout_2"
+        android:layout_below="@+id/lg_layout_3"
         android:layout_centerHorizontal="true"
         />
 

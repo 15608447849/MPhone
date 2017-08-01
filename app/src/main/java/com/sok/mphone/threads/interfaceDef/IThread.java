@@ -40,7 +40,6 @@ public abstract class IThread extends Thread implements IThreadCommunication{
     @Override
     public void sendMessageToThread(Object data) {
         //收到别人给我的消息
-        if (data==null)  return;
 //        log.i(TAG,"收到消息 -> 到服务器 : [ "+ data.toString()+ " ]");
     }
 }

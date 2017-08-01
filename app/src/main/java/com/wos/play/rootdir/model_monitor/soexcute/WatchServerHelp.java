@@ -1,6 +1,7 @@
 package com.wos.play.rootdir.model_monitor.soexcute;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,9 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.sok.mphone.R;
+import com.sok.mphone.services.CommuntServer;
 
 /**
  * Created by 79306 on 2017/3/8.
@@ -24,11 +28,11 @@ public class WatchServerHelp extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Notification notification = new Notification();
-        startForeground(1, notification);
+
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+            createNotify();
             int type = intent.getIntExtra(DEAMS_KEY,-1);
             if (type == OPEN_DEAMS){
                 open();
@@ -43,6 +47,19 @@ public class WatchServerHelp extends Service {
                 openAll();
             }
         return START_NOT_STICKY;
+    }
+
+    private void createNotify() {
+        Notification.Builder builder = new Notification.Builder(getApplicationContext());
+        builder.setSmallIcon(R.drawable.title_icon);
+        builder.setContentTitle(getString(R.string.notify_server_monite_title));
+        builder.setContentInfo(getString(R.string.notify_server_info));
+        Intent intent = new Intent(getApplicationContext(), CommuntServer.class);
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0,intent, 0);
+        builder.setContentIntent(pendingIntent);
+        //把该service创建为前台service
+        Notification notification = builder.build();
+        startForeground(1, notification);
     }
 
     @Nullable

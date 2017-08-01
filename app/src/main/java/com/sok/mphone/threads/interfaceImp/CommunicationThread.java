@@ -1,7 +1,7 @@
 package com.sok.mphone.threads.interfaceImp;
 
 import com.sok.mphone.entity.SocketBeads;
-import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
+import com.sok.mphone.threads.interfaceDef.IActivityCommunication;
 import com.sok.mphone.threads.interfaceDef.IThread;
 import com.sok.mphone.tools.log;
 
@@ -13,8 +13,8 @@ import com.sok.mphone.tools.log;
 public class CommunicationThread extends IThread {
 
     private SocketBeads sBean;
-    private int reCreateConnTime = 3 * 1000;
-    private IActvityCommunication iActivity;
+    private int reCreateConnTime = 2000;
+    private IActivityCommunication iActivity;
 
 
     private SendMsgThread sender;
@@ -22,15 +22,16 @@ public class CommunicationThread extends IThread {
 
     public CommunicationThread(SocketBeads sBean) {
         this.sBean = sBean;
+        this.sBean.setOuttime(reCreateConnTime);
         log.i("通讯线程","创建");
     }
 
-    public CommunicationThread(IActvityCommunication iActivity, SocketBeads sBean) {
+    public CommunicationThread(IActivityCommunication iActivity, SocketBeads sBean) {
         this(sBean);
         this.iActivity = iActivity;
     }
 
-    public CommunicationThread(SocketBeads sBean, int reCreateConnTime, IActvityCommunication iActivity) {
+    public CommunicationThread(SocketBeads sBean, int reCreateConnTime, IActivityCommunication iActivity) {
         this(iActivity, sBean);
         this.reCreateConnTime = reCreateConnTime;
     }
@@ -66,16 +67,16 @@ public class CommunicationThread extends IThread {
             if (sBean.isConnected()) {
                 //连接成功发送心跳
                 if (iActivity != null)
-                    iActivity.sendMessageToActivity(IActvityCommunication.CONNECT_ING);
+                    iActivity.sendMessageToActivity(IActivityCommunication.CONNECT_ING);
 
             } else {
                 //创建链接  - 1 连接成功
                 if (sBean.createConnect()) {
                     if (iActivity != null)
-                        iActivity.sendMessageToActivity(IActvityCommunication.CONNECT_SUCCEND);
+                        iActivity.sendMessageToActivity(IActivityCommunication.CONNECT_SUCCEND);
                 } else {
                     if (iActivity != null)
-                        iActivity.sendMessageToActivity(IActvityCommunication.CONNECT_FAILT);
+                        iActivity.sendMessageToActivity(IActivityCommunication.CONNECT_FAILT);
                 }
             }
             try {
@@ -88,7 +89,7 @@ public class CommunicationThread extends IThread {
 
     @Override
     public void sendMessageToThread(Object data) {
-        super.sendMessageToThread(data);
+        if (data == null)  return;
         if (sBean != null && sBean.isConnected()) {
             sBean.putMessage(data.toString());
         }

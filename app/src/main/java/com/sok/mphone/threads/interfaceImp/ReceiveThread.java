@@ -1,7 +1,7 @@
 package com.sok.mphone.threads.interfaceImp;
 
 import com.sok.mphone.entity.SocketBeads;
-import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
+import com.sok.mphone.threads.interfaceDef.IActivityCommunication;
 import com.sok.mphone.threads.interfaceDef.IThread;
 
 /**
@@ -12,9 +12,9 @@ public class ReceiveThread extends IThread {
 
     private SocketBeads sBean;
 
-    private IActvityCommunication iActivity;
+    private IActivityCommunication iActivity;
 
-    public ReceiveThread(SocketBeads sBean,IActvityCommunication iActivity) {
+    public ReceiveThread(SocketBeads sBean,IActivityCommunication iActivity) {
         this.sBean = sBean;
         this.iActivity = iActivity;
     }

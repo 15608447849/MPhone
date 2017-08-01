@@ -1,7 +1,5 @@
 package com.sok.mphone.entity;
 
-import android.util.Log;
-
 import com.sok.mphone.tools.AppsTools;
 
 import java.util.HashMap;
@@ -19,6 +17,7 @@ public class SysInfo {
         String CONFIG_INFO = "CONFIG_INFO";
         String SERVER_IP = "SERVER_IP";
         String SERVER_PORT = "SERVER_PORT";
+        String JOB_NUMBER = "JOB_NUMBER";
         String APP_MAC = "APP_MAC";
         String CONNECT_STATE = "CONNECT_STATE";
         String COMMUNICATION_STATE = "COMMUNICATION_STATE";
@@ -63,6 +62,7 @@ public class SysInfo {
     private String configInfo = IFCONFIG.CONFIG_FAILT;
     private String serverIp = "";
     private String serverPort = "";
+    private String jobNumber = "";
     private String appMac = "";
     private String localConnect = LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE;//默认不允许
     //通讯
@@ -209,6 +209,13 @@ public class SysInfo {
         this.appMac = appMac;
     }
 
+    public String getJobNumber() {
+        return jobNumber;
+    }
+
+    public void setJobNumber(String jobNumber) {
+        this.jobNumber = jobNumber;
+    }
 
     //读取信息
     private synchronized void readInfo(int type) {
@@ -219,7 +226,7 @@ public class SysInfo {
         if (type == COMUNICATION){
             file = COMMUNICATION_FILE;
         }
-        Log.e(TAG,"准备读取文件:"+file);
+//        Log.e(TAG,"准备读取文件:"+file);
         if (file==null) return;
         try {
             if (FileUtils.isFileExist(file)) {
@@ -268,6 +275,7 @@ public class SysInfo {
                 configEntity.setMap(map);
                 this.setServerIp(configEntity.GetStringDefualt(KEYS.SERVER_IP));//ip
                 this.setServerPort(configEntity.GetStringDefualt(KEYS.SERVER_PORT));//port
+                this.setJobNumber(configEntity.GetStringDefualt(KEYS.JOB_NUMBER));//job number
                 this.setAppMac(configEntity.GetStringDefualt(KEYS.APP_MAC));
                 this.setLocalConnect(configEntity.GetStringDefualt(KEYS.LOCAL_CONNECT));//本地授权
                 this.setConfigInfo(configEntity.GetStringDefualt(KEYS.CONFIG_INFO));
@@ -302,6 +310,7 @@ public class SysInfo {
                 configEntity.clear();
                 configEntity.put(KEYS.SERVER_IP, AppsTools.justIsEnptyToString(getServerIp()));
                 configEntity.put(KEYS.SERVER_PORT, AppsTools.justIsEnptyToString(getServerPort()));
+                configEntity.put(KEYS.JOB_NUMBER, AppsTools.justIsEnptyToString(getJobNumber()));
                 configEntity.put(KEYS.APP_MAC, AppsTools.justIsEnptyToString(getAppMac()));
                 configEntity.put(KEYS.LOCAL_CONNECT, AppsTools.justIsEnptyToString(getLocalConnect()));
                 configEntity.put(KEYS.CONFIG_INFO,AppsTools.justIsEnptyToString(getConfigInfo()));

@@ -95,18 +95,17 @@ public class ShowFragments extends Fragment {
 
         if (id == R.id.show_button_sure) {
             //发送接受请求
-            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_ACCEPT_SERVER);
+            mActivity.sendMessageToServers(CommunicationProtocol.APP_RECEIVE);
             setMessageSendSuccess(0);
         }
         if (id == R.id.show_button_refuse) {
             //发送拒绝请求
-            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_REFUSE_SERVER);
+            mActivity.sendMessageToServers(CommunicationProtocol.APP_REFUSE);
             setMessageSendSuccess(0);
         }
         if (id == R.id.show_button_over) {
-            mActivity.showTolas("已告知完成服务");
             //发送服务完成请求
-            mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_OVER_SERVER);
+            mActivity.sendMessageToServers(CommunicationProtocol.APP_LOCAL_SERVER_OVER);
             setMessageSendSuccess(1);
         }
         if (id == R.id.show_button_exit) { //结束通讯服务
@@ -114,24 +113,16 @@ public class ShowFragments extends Fragment {
             if (SysInfo.get(SysInfo.COMUNICATION).isHasMessage() &&
                     SysInfo.get(SysInfo.COMUNICATION).isMessageTask()) {
                 //发送拒绝请求
-                mActivity.sendMessageToServers(CommunicationProtocol.ANTY + CommunicationProtocol.RECIPT_REFUSE_SERVER);
+                mActivity.sendMessageToServers(CommunicationProtocol.APP_REFUSE);
                 setMessageSendSuccess(0);
             }
-
-            //设置不连接标识
-            SysInfo sifo = SysInfo.get(SysInfo.CONFIG);
-            sifo.setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE);
-            //写入文件
-            if (sifo.writeInfo(SysInfo.CONFIG)){
-                mActivity.showTolas("已断开连接服务");//+SysInfo.get(SysInfo.CONFIG).isLocalConnect()
-                mActivity.startCommunication();
-            }
+           mActivity.sendOffline();
         }
         mActivity.finish();
     }
     //消息已发送出去
     public void setMessageSendSuccess(int type) {
-        //设置 接受拒接 不可点击 - 消失
+        //设置 接受拒接按钮. 不可点击 -> 消失
         setButtonClick(type,false);
         setNoShowButton(type);
     }

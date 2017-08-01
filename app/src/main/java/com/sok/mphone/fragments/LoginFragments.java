@@ -49,6 +49,9 @@ public class LoginFragments extends Fragment {
     @Bind(R.id.login_server_port)
     EditText login_server_port;
 
+    @Bind(R.id.login_job_number)
+    EditText login_job_number;
+
     @Bind(R.id.login_state)
     TextView login_state;
 
@@ -89,10 +92,13 @@ public class LoginFragments extends Fragment {
     private void initData() {
         String ip = SysInfo.get(SysInfo.CONFIG).getServerIp();
         String port = SysInfo.get(SysInfo.CONFIG).getServerPort();
+        String jobNumber =  SysInfo.get(SysInfo.CONFIG).getJobNumber();
         if (!"".equals(ip))
                 login_server_ip.setText(ip);
         if (!"".equals(port))
-                login_server_port.setText(port);
+            login_server_port.setText(port);
+        if (!"".equals(jobNumber))
+            login_job_number.setText(jobNumber);
         if (SysInfo.get(SysInfo.COMUNICATION).isConnected()) {
             mActivity.startCommunication();
             login_state.setText(mActivity.getString(R.string.login_state_connect_ing));//连接中
@@ -108,13 +114,8 @@ public class LoginFragments extends Fragment {
         if (mActivity==null) return;
         if (!AppsTools.isOpenNetwork(mActivity)){
             mActivity.showTolas("网络连接不可用");
-            //进入网络设置
-            if(android.os.Build.VERSION.SDK_INT > 10 ){
-                //3.0以上打开设置界面，也可以直接用ACTION_WIRELESS_SETTINGS打开到wifi界面
-                startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
-            } else {
-                startActivity(new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS));
-            }
+            //打开设置界面,进入网络设置
+            startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
             return;
         }
 
@@ -133,11 +134,13 @@ public class LoginFragments extends Fragment {
         if (!SysInfo.get(SysInfo.COMUNICATION).isConnected()) { //判断不在连接中
             String ip = login_server_ip.getText().toString().trim();
             String port = login_server_port.getText().toString().trim();
-            if (!"".equals(ip) && !"".equals(port)) {
+            String jobNumber = login_job_number.getText().toString().trim();
+            if (!"".equals(ip) && !"".equals(port) && !"".equals(jobNumber)) {
                 login_state.setText(mActivity.getString(R.string.login_state_connect_ing));//连接中
                 SysInfo sifo = SysInfo.get(SysInfo.CONFIG);
                 sifo.setServerIp(ip);
                 sifo.setServerPort(port);
+                sifo.setJobNumber(jobNumber);
                 sifo.setAppMac(AppsTools.getMacAddress(mActivity));//获取mac地址
                 sifo.setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_ENABLE);//本地允许
                 sifo.setConfigInfo(SysInfo.IFCONFIG.CONFIG_SUCCESS);
@@ -148,6 +151,8 @@ public class LoginFragments extends Fragment {
                     mActivity.showTolas("写入配置信息失败");
                     login_state.setText(mActivity.getString(R.string.login_state_connect_failt));//连接失败
                 }
+            }else{
+                mActivity.showTolas("请输入完整信息");
             }
         }
     }

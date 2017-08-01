@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
@@ -19,7 +20,8 @@ import com.sok.mphone.fragments.LoginFragments;
 import com.sok.mphone.fragments.ShowFragments;
 import com.sok.mphone.services.CommuntBroadCasd;
 import com.sok.mphone.services.CommuntServer;
-import com.sok.mphone.threads.interfaceDef.IActvityCommunication;
+import com.sok.mphone.threads.interfaceDef.IActivityCommunication;
+import com.sok.mphone.tools.CommunicationProtocol;
 import com.sok.mphone.tools.log;
 
 public class BaseActivity extends Activity {
@@ -27,7 +29,7 @@ public class BaseActivity extends Activity {
 
     private LoginFragments loginPage;
     private ShowFragments showPage;
-
+    private Intent ServerIntent =null;
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
@@ -47,7 +49,7 @@ public class BaseActivity extends Activity {
                 return;
             }
         }
-
+        ServerIntent =  new Intent(this, CommuntServer.class);
         registBroad();
         initFragments(true);
     }
@@ -129,19 +131,19 @@ public class BaseActivity extends Activity {
     //选择页面
     private void swithPage() {
         boolean flag =SysInfo.get(SysInfo.COMUNICATION).isConnected();
-        log.i(TAG," swithPage() 当前连接状态:"+flag);
+        log.i(TAG,"swithPage() 当前连接状态:"+flag);
         //如果 已经 --> 1配置 2本地允许接入 3正在链接中 4.有权限访问
         if (SysInfo.get(SysInfo.CONFIG).isConfig() &&
                 SysInfo.get(SysInfo.CONFIG).isLocalConnect() &&
                 flag //&& SysInfo.get(SysInfo.COMUNICATION).isAccess()
                ) {// 已配置 并且 可连接  - > 显示 show页面 ,关闭 login页面 ->
-            log.i(TAG,"  show page - -");
+            log.i(TAG,"show page");
             if (showPage == null) {
                 showPage = (ShowFragments) IFragmentsFactory.getInstans(IFragmentsFactory.Type.show_page);
             }
             IFragmentsFactory.repeateFragment(getFragmentManager().beginTransaction(), R.id.base_layout_3, showPage);
         } else {
-            log.i(TAG,"  login page - -");
+            log.i(TAG,"login page");
             if (loginPage == null) {
                 loginPage = (LoginFragments) IFragmentsFactory.getInstans(IFragmentsFactory.Type.login_page);
             }
@@ -182,13 +184,15 @@ public class BaseActivity extends Activity {
 
     //打开通讯服务
     public void startCommunication() {
-        this.startService(new Intent(this, CommuntServer.class));
+        log.i(TAG,"尝试打开intent: CommuntServer: "+ServerIntent);
+        this.startService(ServerIntent);
     }
 
     //关闭通讯服务
     public void stopCommunication() {
         try {
-            this.stopService(new Intent(this, CommuntServer.class));
+            log.i(TAG,"尝试关闭intent: CommuntServer: "+ ServerIntent);
+            this.stopService(ServerIntent);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -204,23 +208,37 @@ public class BaseActivity extends Activity {
         this.sendBroadcast(intent);
     }
 
-    public void receiveServerMessage(int type) {
+    //通知下线
+    public void sendOffline() {
 
-        if (type == IActvityCommunication.CONNECT_SUCCEND) {
+        //设置不连接标识
+        SysInfo sifo = SysInfo.get(SysInfo.CONFIG);
+        sifo.setLocalConnect(SysInfo.LOCAL_CONNECT.LOCAL_CONNECT_UNENABLE);
+        //写入文件
+        if (sifo.writeInfo(SysInfo.CONFIG)){
+            sendMessageToServers(CommunicationProtocol.APP_CONNECT_CLOSE);
+            showTolas("已断开与服务器的通讯连接");//+SysInfo.get(SysInfo.CONFIG).isLocalConnect()
+            startCommunication();
+        }
+    }
+
+    public void receiveServerMessage(int type) {
+        //MESSAGE_SEND_SUCCESS   _ 消息发送成功 未处理
+        if (type == IActivityCommunication.CONNECT_SUCCEND) {
             //连接成功
             log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 连接成功");
             if (loginPage != null) {//如果现在是登陆页面
                 loginPage.setConnectSuccess();
             }
-        }
-        if (type == IActvityCommunication.MESSAGE_SEND_SUCCESS) {
-            // 消息发送成功
-//            log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 消息发送成功");
-//            if (showPage != null) {//现在 - 显示状态
-//                showPage.setMessageSendSuccess();
-//            }
-        }
-        if (type == IActvityCommunication.CONNECT_FAILT) {
+        }else
+        if (type == IActivityCommunication.CONNECT_STOP) { //停止连接
+//            showTolas("服务器通知客户端下线.");
+            sendOffline();
+            startActivity(new Intent(this,ForcedOfflineActivity.class));
+            //弹出提示窗口
+            this.finish();
+        }else
+        if (type == IActivityCommunication.CONNECT_FAILT) {
             // 连接失败
             log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 连接失败");
             if (showPage != null) {//现在是显示状态
@@ -229,8 +247,8 @@ public class BaseActivity extends Activity {
             if (loginPage!=null){
                 loginPage.setConnectFailt();
             }
-        }
-        if (type == IActvityCommunication.CONNECT_IS_NOT_ACCESS) {
+        }else
+        if (type == IActivityCommunication.CONNECT_IS_NOT_ACCESS) {
             // 无权访问
             log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 无权访问服务器");
 //            showTolas("无访问权限,请联系客服");
@@ -239,17 +257,18 @@ public class BaseActivity extends Activity {
             startActivity(new Intent(this,ServerNotPermissionActivity.class));
             //弹出提示窗口
             this.finish();
-        }
-        if (type == IActvityCommunication.CONNECT_ING_FREE){
-            //空闲
+        }else
+        if (type == IActivityCommunication.CONNECT_ING_FREE){
+//            空闲
             log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 空闲");
             if (showPage != null) {//现在 - 显示状态
+                Log.i(TAG,"设置状态");
                 showPage.setMessageSendSuccess(0);
                 showPage.setMessageSendSuccess(1);
             }
         }
 
-        if (type == IActvityCommunication.CONNECT_ING_NOTFREE){ //繁忙
+        if (type == IActivityCommunication.CONNECT_ING_NOTFREE){ //繁忙
             log.i(TAG, "activity 收到 - 连接返回值类型 - type [" + type + "] - 繁忙");
             if (showPage != null) {//显示 - 结束服务
                 showPage.showOverButton();

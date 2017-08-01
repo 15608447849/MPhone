@@ -69,7 +69,8 @@
             android:name="com.wos.play.rootdir.model_monitor.soexcute.WatchServerHelp"
             android:process="com.sok.watch" />
 
-        <activity android:name=".activity.WatchActivity"></activity>
+        <activity android:name=".activity.WatchActivity" />
+        <activity android:name=".activity.ForcedOfflineActivity"/>
     </application>
 
 </manifest>

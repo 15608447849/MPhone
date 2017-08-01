@@ -169,6 +169,7 @@ public class AppsTools {
         byte[] b;
         try
         {
+
             NetworkInterface NIC = NetworkInterface.getByName("eth0");
             b = NIC.getHardwareAddress();
             StringBuffer buffer = new StringBuffer();
