@@ -105,7 +105,7 @@ public class CommuntServer extends Service implements IActivityCommunication {
                             socBen.setIp(SysInfo.get(SysInfo.CONFIG).getServerIp());
                             socBen.setPort(Integer.parseInt(SysInfo.get(SysInfo.CONFIG).getServerPort()));
                             startCommThread();
-                            communicationMessage.setType(SysInfo.get(SysInfo.CONFIG).getServerPort());
+                            communicationMessage.setType(SysInfo.get(SysInfo.CONFIG).getServerPort());//根据端口设置类型 - ()
                             //打开监听
                             WatchServerHelp.openDeams(getApplication());
                         }
